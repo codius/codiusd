@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "resource": {
+      "type": "object",
+      "properties": {
+        "vcpu": {
+          "type": "integer"
+        },
+        "memory": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

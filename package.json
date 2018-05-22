@@ -1,0 +1,92 @@
+{
+  "name": "codiusd",
+  "version": "1.0.0",
+  "description": "Codius Host Software",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.js.map"
+  ],
+  "scripts": {
+    "build": "npm run schema-to-tsd && npm run compile-ts",
+    "schema-to-tsd": "node scripts/build-schema-types",
+    "compile-ts": "tsc --project .",
+    "lint": "tslint --project .",
+    "pretest": "npm run build",
+    "test": "nyc mocha",
+    "watch": "mocha-typescript-watch",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codius/codiusd.git"
+  },
+  "keywords": [
+    "hosting",
+    "smart-contract",
+    "vm",
+    "container",
+    "pod",
+    "host",
+    "server"
+  ],
+  "author": "Codius Team <info@codius.org>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/codius/codiusd/issues"
+  },
+  "homepage": "https://github.com/codius/codiusd#readme",
+  "dependencies": {
+    "axios": "github:axios/axios",
+    "debug": "^3.1.0",
+    "hapi": "^17.4.0",
+    "lodash": "^4.17.10",
+    "reduct": "^3.2.0",
+    "riverpig": "^1.1.3",
+    "through2": "^2.0.3",
+    "whatwg-fetch": "^2.0.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.3",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/debug": "0.0.30",
+    "@types/hapi": "^17.0.12",
+    "@types/lodash": "^4.14.108",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^10.0.4",
+    "@types/sinon": "^4.3.1",
+    "@types/through2": "^2.0.33",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "json-schema-to-typescript": "^5.5.0",
+    "mocha": "^5.1.1",
+    "mocha-typescript": "^1.1.12",
+    "nyc": "^11.7.1",
+    "sinon": "^5.0.4",
+    "source-map-support": "^0.5.5",
+    "ts-node": "^6.0.2",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "^2.8.3"
+  },
+  "nyc": {
+    "check-coverage": true,
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 80,
+    "include": [
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "test/**/*.js"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ],
+    "all": true
+  }
+}
