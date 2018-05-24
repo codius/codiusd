@@ -1,7 +1,10 @@
 import { PodSpec } from '../schemas/PodSpec'
 import { ContainerSpec } from '../schemas/ContainerSpec'
+import { Injector } from 'reduct'
+import { ManifestHash } from './ManifestHash'
 
 export default class ManifestParser {
+  private hash: ManifestHash
   private readonly MACHINE_SPECS = {
     small: {
       vcpu: 1,
@@ -9,8 +12,13 @@ export default class ManifestParser {
     }
   }
 
+  constructor (deps: Injector) {
+    this.hash = deps(ManifestHash)
+  }
+
   manifestToPodSpec (manifest: object): PodSpec {
     return {
+      id: this.hash.hashManifest(manifest),
       resource: this.machineToResource(manifest['machine']),
       containers: manifest['containers']
         .map(this.processContainer.bind(this, manifest)),
@@ -23,6 +31,7 @@ export default class ManifestParser {
 
   processContainer (manifest: object, container: object): ContainerSpec {
     return {
+      name: container['id'],
       image: container['image'],
       command: container['command'],
       workdir: container['workdir'],

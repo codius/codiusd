@@ -40,6 +40,7 @@
   "homepage": "https://github.com/codius/codiusd#readme",
   "dependencies": {
     "axios": "github:axios/axios",
+    "canonical-json": "0.0.4",
     "debug": "^3.1.0",
     "fs-extra": "^6.0.1",
     "hapi": "^17.4.0",
