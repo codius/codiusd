@@ -41,10 +41,12 @@
   "dependencies": {
     "axios": "github:axios/axios",
     "debug": "^3.1.0",
+    "fs-extra": "^6.0.1",
     "hapi": "^17.4.0",
     "lodash": "^4.17.10",
     "reduct": "^3.2.0",
     "riverpig": "^1.1.3",
+    "tempy": "^0.2.1",
     "through2": "^2.0.3",
     "whatwg-fetch": "^2.0.4"
   },
