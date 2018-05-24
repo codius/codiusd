@@ -12,7 +12,8 @@ export default class ManifestParser {
   manifestToPodSpec (manifest: object): PodSpec {
     return {
       resource: this.machineToResource(manifest['machine']),
-      containers: manifest['containers'].map(this.processContainer.bind(this))
+      containers: manifest['containers']
+        .map(this.processContainer.bind(this, manifest)),
     }
   }
 
@@ -20,11 +21,48 @@ export default class ManifestParser {
     return this.MACHINE_SPECS[machine] || this.MACHINE_SPECS['small']
   }
 
-  processContainer (container: object): ContainerSpec {
+  processContainer (manifest: object, container: object): ContainerSpec {
     return {
       image: container['image'],
       command: container['command'],
-      workdir: container['workdir']
+      workdir: container['workdir'],
+      envs: this.processEnv(manifest, container['environment'])
+    }
+  }
+
+  processEnv (manifest: object, environment: object): Array<object> {
+    if (!environment) return undefined
+    return Object.keys(environment).reduce((res, key) => {
+      res[key] = {
+        env: key,
+        value: this.processValue(manifest, environment[key])
+      }
+
+      return res
+    }, {})
+  }
+
+  processValue (manifest: object, value: string): string {
+    // TODO: is this the way we want to do escaping?
+    if (value.startsWith('\\$')) return value.substring(1)
+    if (!value.startsWith('$')) return value
+
+    const varName = value.substring(1)
+    const varSpec = manifest.vars && manifest.vars[varName]
+
+    if (!varSpec) {
+      throw new Error('could not interpolate var. ' +
+        `var=${value} ` +
+        `manifest.vars=${JSON.stringify(manifest.vars)}`)
+    }
+
+    if (!varSpec.encoding) {
+      return varSpec.value
+    }
+
+    if (varSpec.encoding === 'private:sha256') {
+      // TODO: private sha256 variables
+      throw new Error('TODO')
     }
   }
 }
