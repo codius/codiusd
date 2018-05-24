@@ -4,14 +4,8 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface PodSpec {
-  resource?: {
-    vcpu?: number;
-    memory?: number;
-  };
-  containers?: {
-    image?: string;
-    command?: string[];
-    workdir?: string;
-  }[];
+export interface ContainerSpec {
+  image?: string;
+  command?: string[];
+  workdir?: string;
 }

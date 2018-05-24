@@ -12,6 +12,12 @@
         }
       },
       "additionalProperties": false
+    },
+    "containers": {
+      "type": "array",
+      "items": {
+        "$ref": "./ContainerSpec.json"
+      }
     }
   },
   "additionalProperties": false

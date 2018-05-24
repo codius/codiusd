@@ -1,4 +1,5 @@
 import { PodSpec } from '../schemas/PodSpec'
+import { ContainerSpec } from '../schemas/ContainerSpec'
 
 export default class ManifestParser {
   private readonly MACHINE_SPECS = {
@@ -19,7 +20,7 @@ export default class ManifestParser {
     return this.MACHINE_SPECS[machine] || this.MACHINE_SPECS['small']
   }
 
-  processContainer (container: object) {
+  processContainer (container: object): ContainerSpec {
     return {
       image: container['image'],
       command: container['command'],
