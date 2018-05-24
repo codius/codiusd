@@ -5,13 +5,19 @@
  */
 
 export interface PodSpec {
+  id?: string;
   resource?: {
     vcpu?: number;
     memory?: number;
   };
   containers?: {
+    name?: string;
     image?: string;
     command?: string[];
     workdir?: string;
+    environment?: {
+      env?: string;
+      value?: string;
+    }[];
   }[];
 }

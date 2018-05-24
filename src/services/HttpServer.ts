@@ -4,6 +4,7 @@ import registerPeersController from '../controllers/peers'
 import registerPodsController from '../controllers/pods'
 import { Injector } from 'reduct'
 import Config from './Config'
+const { HapiCog } = require('@sharafian/cog')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('HttpServer')
@@ -26,6 +27,7 @@ export default class HttpServer {
   }
 
   async start () {
+    await this.server.register(HapiCog)
     await this.server.start()
 
     log.info('listening at %s', this.server.info.uri)

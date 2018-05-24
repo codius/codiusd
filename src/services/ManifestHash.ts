@@ -1,5 +1,5 @@
-import canonicalJson from 'canonical-json'
 import { createHash } from 'crypto'
+const canonicalJson = require('canonical-json')
 
 export default class ManifestHash {
   hashManifest (manifest: object) {
