@@ -2,7 +2,8 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "resource": {
       "type": "object",
@@ -23,5 +24,6 @@
       }
     }
   },
+  "required": [ "id" ],
   "additionalProperties": false
 }

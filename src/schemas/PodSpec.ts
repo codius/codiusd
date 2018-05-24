@@ -5,7 +5,7 @@
  */
 
 export interface PodSpec {
-  id?: string;
+  id: string;
   resource?: {
     vcpu?: number;
     memory?: number;

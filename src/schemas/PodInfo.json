@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "running": {
+      "type": "boolean"
+    },
+    "expiry": {
+      "type": "string"
+    }
+  },
+  "required": [ "id", "running", "expiry" ],
+  "additionalProperties": false
+}

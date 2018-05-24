@@ -32,7 +32,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     const podSpec = manifestParser.manifestToPodSpec(request.payload['manifest'])
     console.log('podSpec', podSpec)
-    await podManager.startPod(podSpec)
+    await podManager.startPod(podSpec, duration)
     return {}
   }
 
