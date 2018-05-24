@@ -1,7 +1,7 @@
 import { PodSpec } from '../schemas/PodSpec'
 import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
-import { ManifestHash } from './ManifestHash'
+import ManifestHash from './ManifestHash'
 
 export default class ManifestParser {
   private hash: ManifestHash
@@ -29,7 +29,7 @@ export default class ManifestParser {
     return this.MACHINE_SPECS[machine] || this.MACHINE_SPECS['small']
   }
 
-  processContainer (manifest: object, container: object): ContainerSpec {
+  processContainer (manifest: object, container: object) {
     return {
       name: container['id'],
       image: container['image'],
@@ -40,15 +40,13 @@ export default class ManifestParser {
   }
 
   processEnv (manifest: object, environment: object): Array<object> {
-    if (!environment) return undefined
-    return Object.keys(environment).reduce((res, key) => {
-      res[key] = {
+    if (!environment) return []
+    return Object.keys(environment).map((key) => {
+      return {
         env: key,
         value: this.processValue(manifest, environment[key])
       }
-
-      return res
-    }, {})
+    })
   }
 
   processValue (manifest: object, value: string): string {
@@ -57,12 +55,12 @@ export default class ManifestParser {
     if (!value.startsWith('$')) return value
 
     const varName = value.substring(1)
-    const varSpec = manifest.vars && manifest.vars[varName]
+    const varSpec = manifest['vars'] && manifest['vars'][varName]
 
     if (!varSpec) {
       throw new Error('could not interpolate var. ' +
         `var=${value} ` +
-        `manifest.vars=${JSON.stringify(manifest.vars)}`)
+        `manifest.vars=${JSON.stringify(manifest['vars'])}`)
     }
 
     if (!varSpec.encoding) {
@@ -73,5 +71,7 @@ export default class ManifestParser {
       // TODO: private sha256 variables
       throw new Error('TODO')
     }
+
+    throw new Error('unknown var encoding. var=' + JSON.stringify(varSpec))
   }
 }

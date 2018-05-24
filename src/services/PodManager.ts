@@ -1,7 +1,7 @@
 // import axios from 'axios'
 import { spawn } from 'child_process'
-import tempy from 'tempy'
-import fs from 'fs-extra'
+import * as tempy from 'tempy'
+import * as fs from 'fs-extra'
 
 export default class PodManager {
   async startPod (podSpec: object) {
@@ -23,9 +23,12 @@ export default class PodManager {
 
     return new Promise((resolve, reject) => {
       start.on('close', code => {
-        if (code) reject(new Error(`command failed. ` +
-          `code=${code} `
-          `command="hyperctl run --rm -p ${tmpFile}"`))
+        if (code) {
+          reject(new Error(`command failed. ` +
+            `code=${code} ` +
+            `command="hyperctl run --rm -p ${tmpFile}"`))
+        }
+
         resolve()
       })
     })

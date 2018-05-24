@@ -5,7 +5,12 @@
  */
 
 export interface ContainerSpec {
+  name?: string;
   image?: string;
   command?: string[];
   workdir?: string;
+  environment?: {
+    env?: string;
+    value?: string;
+  }[];
 }
