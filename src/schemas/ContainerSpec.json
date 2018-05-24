@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "name": {
+      "type": "string"
+    },
     "image": {
       "type": "string"
     },
@@ -13,6 +16,22 @@
     },
     "workdir": {
       "type": "string"
+    },
+    "environment": {
+      "type": "array",
+      "optional": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "env": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false
