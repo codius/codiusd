@@ -2,9 +2,19 @@ import { PodSpec } from '../schemas/PodSpec'
 import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
 import ManifestHash from './ManifestHash'
+import { createHash } from 'crypto'
+const canonicalJson = require('canonical-json')
 
-export default class ManifestParser {
-  private hash: ManifestHash
+export interface ManifestOptions {
+  hash: string
+  manifest: object
+  privateManifest: object
+}
+
+export class Manifest {
+  private hash: string
+  private manifest: object
+  private privateManifest: object
   private readonly MACHINE_SPECS = {
     small: {
       vcpu: 1,
@@ -12,55 +22,59 @@ export default class ManifestParser {
     }
   }
 
-  constructor (deps: Injector) {
-    this.hash = deps(ManifestHash)
+  constructor (opts: ManifestOptions) {
+    this.hash = opts.hash
+    this.manifest = opts.manifest
+    this.privateManifest = opts.privateManifest
   }
 
-  manifestToPodSpec (manifest: object): PodSpec {
+  toPodSpec (): PodSpec {
     return {
-      id: this.hash.hashManifest(manifest),
-      resource: this.machineToResource(manifest['machine']),
-      containers: manifest['containers']
-        .map(this.processContainer.bind(this, manifest)),
+      id: this.hash,
+      resource: this.machineToResource(this.manifest['machine']),
+      containers: this.manifest['containers']
+        .map(this.processContainer.bind(this)),
     }
   }
 
-  machineToResource (machine: keyof typeof ManifestParser.prototype.MACHINE_SPECS) {
+  machineToResource (machine: keyof typeof Manifest.prototype.MACHINE_SPECS) {
     return this.MACHINE_SPECS[machine] || this.MACHINE_SPECS['small']
   }
 
-  processContainer (manifest: object, container: object) {
+  processContainer (container: object) {
     return {
       name: container['id'],
       image: container['image'],
       command: container['command'],
       workdir: container['workdir'],
-      envs: this.processEnv(manifest, container['environment'])
+      envs: this.processEnv(container['environment'])
     }
   }
 
-  processEnv (manifest: object, environment: object): Array<object> {
+  processEnv (environment: object): Array<object> {
     if (!environment) return []
     return Object.keys(environment).map((key) => {
       return {
         env: key,
-        value: this.processValue(manifest, environment[key])
+        value: this.processValue(environment[key])
       }
     })
   }
 
-  processValue (manifest: object, value: string): string {
+  processValue (value: string): string {
     // TODO: is this the way we want to do escaping?
     if (value.startsWith('\\$')) return value.substring(1)
     if (!value.startsWith('$')) return value
 
     const varName = value.substring(1)
-    const varSpec = manifest['vars'] && manifest['vars'][varName]
+    const varSpec = this.manifest['vars'] && this.manifest['vars'][varName]
+    const privateVarSpec = this.privateManifest['vars'] &&
+      this.privateManifest['vars'][varName]
 
     if (!varSpec) {
       throw new Error('could not interpolate var. ' +
         `var=${value} ` +
-        `manifest.vars=${JSON.stringify(manifest['vars'])}`)
+        `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
     }
 
     if (!varSpec.encoding) {
@@ -68,10 +82,40 @@ export default class ManifestParser {
     }
 
     if (varSpec.encoding === 'private:sha256') {
-      // TODO: private sha256 variables
-      throw new Error('TODO')
+      if (!privateVarSpec) {
+        throw new Error('could not interpolate private var. ' +
+          `var=${value} ` +
+          `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
+      }
+
+      const hashPrivateVar = createHash('sha256')
+        .update(canonicalJson(privateVarSpec))
+        .digest('hex')
+
+      if (hashPrivateVar !== varSpec.value) {
+        throw new Error('private var does not match hash. ' + 
+          `var=${value} ` +
+          `encoding=${varSpec.encoding} ` +
+          `public-hash=${varSpec.value} ` + 
+          `hashed-value=${hashPrivateVar}`)
+      }
+
+      return privateVarSpec.value
     }
 
     throw new Error('unknown var encoding. var=' + JSON.stringify(varSpec))
+  }
+}
+
+export default class ManifestParser {
+  private hash: ManifestHash
+
+  constructor (deps: Injector) {
+    this.hash = deps(ManifestHash)
+  }
+
+  manifestToPodSpec (manifest: object, privateManifest: object): PodSpec {
+    const hash = this.hash.hashManifest(manifest)
+    return new Manifest({ hash, manifest, privateManifest }).toPodSpec()
   }
 }
