@@ -1,6 +1,7 @@
 import { Injector } from 'reduct'
 
 export default class Config {
+  readonly noop: boolean
   readonly port: number
   readonly publicUri: string
   readonly bootstrapPeers: string
@@ -11,6 +12,7 @@ export default class Config {
       env = process.env
     }
 
+    this.noop = env.CODIUS_HYPER_NOOP === 'true'
     this.port = Number(env.CODIUS_PORT) || 3000
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://localhost:' + this.port)
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
