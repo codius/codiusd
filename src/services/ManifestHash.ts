@@ -1,12 +1,14 @@
 import { createHash } from 'crypto'
+import * as base32 from '../common/base32'
 const canonicalJson = require('canonical-json')
 
 export default class ManifestHash {
   hashManifest (manifest: object) {
     // TODO: is hex output what we want?
-    return createHash('sha256')
+    const hashed = createHash('sha256')
       .update(canonicalJson(manifest), 'utf8')
       .digest()
-      .toString('hex')
+
+    return base32.encode(hashed)
   }
 }
