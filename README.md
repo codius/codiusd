@@ -58,7 +58,7 @@ sudo npm install -g codiusd
 
 ##### Open Issues
 
-* [ ] Block network traffformatic between pods by default
+* [ ] Block network traffic between pods by default
 * [ ] Add plugin decorator to Hapi.Request type
 * [x] Figure out encoding to hash manifest 
 * [ ] How to escape the variable interpolation in manifest parser
@@ -71,3 +71,5 @@ sudo npm install -g codiusd
 * [x] add nonce to the private field spec
 * [ ] port blocking on dangerous ports
 * [x] change manifest hash encoding to base32
+* [ ] publish @sharafian/cog and pull from actual npm
+* [ ] proxy endpoints based on manifest hash to the contract's IP
