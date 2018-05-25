@@ -33,7 +33,11 @@ export default function (server: Hapi.Server, deps: Injector) {
       throw Boom.paymentRequired('Failed to get payment before timeout')
     }
 
-    const podSpec = manifestParser.manifestToPodSpec(request.payload['manifest'])
+    const podSpec = manifestParser.manifestToPodSpec(
+      request.payload['manifest'],
+      request.payload['private']
+    )
+
     log.debug('podSpec', podSpec)
     await podManager.startPod(podSpec, duration)
     return {}
