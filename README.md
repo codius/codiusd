@@ -58,4 +58,16 @@ sudo npm install -g codiusd
 
 ##### Open Issues
 
-* [ ] Block network traffic between pods by default
+* [ ] Block network traffformatic between pods by default
+* [ ] Add plugin decorator to Hapi.Request type
+* [ ] Figure out encoding to hash manifest 
+* [ ] How to escape the variable interpolation in manifest parser
+* [ ] How to fill in the values for private sha256 variables
+* [ ] Switch hyperctl to hyper.sock http requests
+* [ ] Check whether hyper instance is still running before adding duration
+* [ ] How do pods spend money?
+* [ ] add port field
+* [ ] add private field to manifest's parent object
+* [ ] add nonce to the private field spec
+* [ ] port blocking on dangerous ports
+* [ ] change manifest hash encoding to base32
