@@ -2,8 +2,8 @@
 import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import { PodInfo } from '../schemas/PodInfo'
-import { spawn } from 'child_process'
 import PodDatabase from './PodDatabase'
+import Spawner from './Spawner'
 import * as tempy from 'tempy'
 import * as fs from 'fs-extra'
 
@@ -21,9 +21,11 @@ function addDuration (duration: string, _date?: string): string {
 
 export default class PodManager {
   private pods: PodDatabase
+  private spawner: Spawner
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
+    this.spawner = deps(Spawner)
   }
 
   start () {
@@ -36,7 +38,12 @@ export default class PodManager {
 
     const expired = this.pods.getExpiredPods()
     log.debug('got expired pods. pods=' + JSON.stringify(expired))
-    // TODO: delete these expired pods
+
+    await Promise.all(expired.map(async pod => {
+      log.debug('cleaning up pod. id=' + pod)      
+      return this.spawner.spawn('hyperctl', [ 'rm', pod ])
+        .catch(e => log.error('cleanup error. error=' + e.message))
+    }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
@@ -64,23 +71,8 @@ export default class PodManager {
     const tmpFile = tempy.file({ extension: 'json' })
     await fs.writeJson(tmpFile, podSpec)
 
-    const start = spawn('hyperctl', [
+    await this.spawner.spawn('hyperctl', [
       'run', '--rm', '-p', tmpFile
     ])
-
-    start.stdout.pipe(process.stderr)
-    start.stderr.pipe(process.stderr)
-
-    await new Promise((resolve, reject) => {
-      start.on('close', code => {
-        if (code) {
-          reject(new Error(`command failed. ` +
-            `code=${code} ` +
-            `command="hyperctl run --rm -p ${tmpFile}"`))
-        }
-
-        resolve()
-      })
-    })
   }
 }
