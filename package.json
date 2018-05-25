@@ -17,7 +17,8 @@
     "pretest": "npm run build",
     "test": "nyc mocha",
     "watch": "mocha-typescript-watch",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
