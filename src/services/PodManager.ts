@@ -34,15 +34,17 @@ export default class PodManager {
   }
 
   async run () {
-    log.debug('monitoring for expired images')
+    // log.debug('monitoring for expired images')
 
     const expired = this.pods.getExpiredPods()
-    log.debug('got expired pods. pods=' + JSON.stringify(expired))
+    if (expired.length) {
+      log.debug('got expired pods. pods=' + JSON.stringify(expired))
+    }
 
     await Promise.all(expired.map(async pod => {
       log.debug('cleaning up pod. id=' + pod)      
-      return this.spawner.spawn('hyperctl', [ 'rm', pod ])
-        .catch(e => log.error('cleanup error. error=' + e.message))
+      await this.spawner.spawn('hyperctl', [ 'rm', pod ])
+      this.pods.deletePod(pod)
     }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)

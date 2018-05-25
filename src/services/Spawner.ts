@@ -17,6 +17,7 @@ export default class Spawner {
       log.info(`spawn noop. ` +
         `cmd=${cmd} ` +
         `args=${JSON.stringify(args)}`)
+      return
     }
 
     const start = spawn(cmd, args)    
