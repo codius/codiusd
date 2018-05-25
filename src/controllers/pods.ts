@@ -4,6 +4,9 @@ import { Injector } from 'reduct'
 import ManifestParser from '../services/ManifestParser'
 import PodManager from '../services/PodManager'
 
+const Enjoi = require('enjoi')
+const PodRequest = require('../schemas/PodRequest.json')
+
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
 
@@ -48,9 +51,16 @@ export default function (server: Hapi.Server, deps: Injector) {
     path: '/pods',
     handler: postPod,
     options: {
+      validate: {
+        payload: Enjoi(PodRequest),
+        failAction: async (req, h, err) => {
+          log.debug('validation error. error=' + (err && err.message))
+          throw Boom.badRequest('Invalid request payload input')
+        }
+      },
       payload: {
         allow: 'application/json',
-        output: 'data'
+        output: 'data',
       }
     }
   })

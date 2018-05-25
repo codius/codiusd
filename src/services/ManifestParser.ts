@@ -3,6 +3,7 @@ import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
 import ManifestHash from './ManifestHash'
 import { createHash } from 'crypto'
+import * as Boom from 'boom'
 const canonicalJson = require('canonical-json')
 
 export interface ManifestOptions {
@@ -72,7 +73,7 @@ export class Manifest {
       this.privateManifest['vars'][varName]
 
     if (!varSpec) {
-      throw new Error('could not interpolate var. ' +
+      throw Boom.badData('could not interpolate var. ' +
         `var=${value} ` +
         `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
     }
@@ -83,7 +84,7 @@ export class Manifest {
 
     if (varSpec.encoding === 'private:sha256') {
       if (!privateVarSpec) {
-        throw new Error('could not interpolate private var. ' +
+        throw Boom.badData('could not interpolate private var. ' +
           `var=${value} ` +
           `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
       }
@@ -93,7 +94,7 @@ export class Manifest {
         .digest('hex')
 
       if (hashPrivateVar !== varSpec.value) {
-        throw new Error('private var does not match hash. ' + 
+        throw Boom.badData('private var does not match hash. ' + 
           `var=${value} ` +
           `encoding=${varSpec.encoding} ` +
           `public-hash=${varSpec.value} ` + 
@@ -103,7 +104,7 @@ export class Manifest {
       return privateVarSpec.value
     }
 
-    throw new Error('unknown var encoding. var=' + JSON.stringify(varSpec))
+    throw Boom.badData('unknown var encoding. var=' + JSON.stringify(varSpec))
   }
 }
 
