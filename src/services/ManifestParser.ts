@@ -44,7 +44,7 @@ export class Manifest {
 
   processContainer (container: object) {
     return {
-      name: container['id'],
+      name: `${this.hash}__${container['id']}`,
       image: container['image'],
       command: container['command'],
       workdir: container['workdir'],
