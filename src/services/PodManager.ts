@@ -4,6 +4,7 @@ import { PodSpec } from '../schemas/PodSpec'
 import { PodInfo } from '../schemas/PodInfo'
 import PodDatabase from './PodDatabase'
 import Spawner from './Spawner'
+import Config from './Config'
 import * as tempy from 'tempy'
 import * as fs from 'fs-extra'
 
@@ -20,11 +21,13 @@ function addDuration (duration: string, _date?: string): string {
 }
 
 export default class PodManager {
+  private config: Config
   private pods: PodDatabase
   private spawner: Spawner
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
+    this.config = deps(Config)
     this.spawner = deps(Spawner)
   }
 
@@ -43,7 +46,7 @@ export default class PodManager {
 
     await Promise.all(expired.map(async pod => {
       log.debug('cleaning up pod. id=' + pod)      
-      await this.spawner.spawn('hyperctl', [ 'rm', pod ])
+      await this.spawner.spawn(this.config.hyperctlCmd, [ 'rm', pod ])
       this.pods.deletePod(pod)
     }))
 
@@ -73,8 +76,8 @@ export default class PodManager {
     const tmpFile = tempy.file({ extension: 'json' })
     await fs.writeJson(tmpFile, podSpec)
 
-    await this.spawner.spawn('hyperctl', [
-      'run', '--rm', '-p', tmpFile
+    await this.spawner.spawn(this.config.hyperctlCmd, [
+      'run', '-p', tmpFile
     ])
   }
 }
