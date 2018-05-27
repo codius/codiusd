@@ -2,6 +2,7 @@
 import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import { PodInfo } from '../schemas/PodInfo'
+import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
 import Spawner from './Spawner'
 import Config from './Config'
@@ -22,11 +23,13 @@ function addDuration (duration: string, _date?: string): string {
 
 export default class PodManager {
   private config: Config
+  private hyper: HyperClient
   private pods: PodDatabase
   private spawner: Spawner
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
+    this.hyper = deps(HyperClient)
     this.config = deps(Config)
     this.spawner = deps(Spawner)
   }
@@ -79,5 +82,7 @@ export default class PodManager {
     await this.spawner.spawn(this.config.hyperctlCmd, [
       'run', '-p', tmpFile
     ])
+
+    log.debug(`created pod. ip=${await this.hyper.getPodIP(podSpec.id)}`)
   }
 }
