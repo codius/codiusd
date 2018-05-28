@@ -3,45 +3,48 @@ import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import PodDatabase from '../services/PodDatabase'
 
-const MANIFEST_PATH_REGEX = /^([a-zA-Z2-7]{52})\/?/
+const HttpProxy = require('http-proxy')
+const MANIFEST_LABEL_REGEX = /^[a-zA-Z2-7]{52}$/
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('proxy')
 
 export default function (server: Hapi.Server, deps: Injector) {
   const pods = deps(PodDatabase)
+  const proxy = HttpProxy.createProxyServer({
+    ws: true // allow websockets
+  })
 
   async function proxyToPod (request: Hapi.Request, h: any) {
-    const [, hash ]: Array<string> = request.params.hash.match(MANIFEST_PATH_REGEX) || []
+    const [ label ] = request.info.host.split('.')
 
-    if (!hash) {
-      throw Boom.notFound()
+    if (!MANIFEST_LABEL_REGEX.exec(label)) {
+      return h.continue
     }
 
-    const pod = pods.getPod(hash)
+    const pod = pods.getPod(label)
     if (!pod || !pod.ip || !pod.port) {
       throw Boom.notFound('no pod with that hash found. ' +
-        `hash=${hash}`)
+        `hash=${label}`)
     }
 
-    const truncatedPath = request.params.hash
-      .replace(MANIFEST_PATH_REGEX, '')
-    const uri = `http://${pod.ip}:${pod.port}/${truncatedPath}`
-    log.debug(`proxying request. hash=${hash} uri="${uri}"`)
+    const target = `http://${pod.ip}:${pod.port}`
 
-    // TODO: proxy ws requests too
-    return h.proxy({ uri })
+    await new Promise((resolve, reject) => {
+      proxy.web(request.raw.req, request.raw.res, { target }, (e: any) => {
+        const statusError = {
+          ECONNREFUSED: Boom.serverUnavailable(),
+          ETIMEOUT: Boom.gatewayTimeout()
+        }[e.code]
+
+        if (statusError) {
+          reject(statusError)
+        }
+
+        resolve()
+      })
+    })
   }
 
-  server.route({
-    method: '*',
-    path: '/{hash*}',
-    options: {
-      handler: proxyToPod,
-      payload: {
-        parse: false,
-        output: 'stream'
-      }
-    }
-  })
+  server.ext('onRequest', proxyToPod)
 }
