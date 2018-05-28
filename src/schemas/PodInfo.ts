@@ -8,4 +8,6 @@ export interface PodInfo {
   id: string;
   running: boolean;
   expiry: string;
+  port?: number;
+  ip?: string;
 }

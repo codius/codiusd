@@ -2,6 +2,18 @@ import { PodInfo } from '../schemas/PodInfo'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodDatabase')
 
+function addDuration (duration: string, _date?: string): string {
+  const date = _date || new Date().toISOString()
+  return new Date(Number(new Date(date)) + Number(duration) * 1000)
+    .toISOString()
+}
+
+export interface AddPodParams {
+  id: string,
+  running: boolean,
+  duration: string
+}
+
 export default class PodDatabase {
   private pods: Map<string, PodInfo> = new Map()
 
@@ -28,13 +40,59 @@ export default class PodDatabase {
       .map(p => p.id)
   }
 
-  public addPod (info: PodInfo): void {
+  public addDurationToPod (id: string, duration: string): void {
+    const info = this.pods.get(id)
+    if (!info) {
+      throw new Error('no pod found with id. id=' + id)
+    }
+
+    info.expiry = addDuration(duration, info.expiry)
+  
+    log.debug('added duration to pod. ' +
+      `id=${info.id} ` +
+      `duration=${duration} ` +
+      `expiry=${info.expiry}`)
+  }
+
+  public setPodIP (id: string, ip: string): void {
+    const info = this.pods.get(id)
+    if (!info) {
+      throw new Error('no pod found with id. id=' + id)
+    }
+
+    info.ip = ip
+
+    log.debug('set pod ip. ' +
+      `id=${id} ` +
+      `ip=${ip}`)
+  }
+
+  public setPodPort (id: string, port: string): void {
+    const info = this.pods.get(id)
+    if (!info) {
+      throw new Error('no pod found with id. id=' + id)
+    }
+
+    info.port = Number(port)
+
+    log.debug('set pod port. ' +
+      `id=${id} ` +
+      `port=${port}`)
+  }
+
+  public addPod (params: AddPodParams): void {
+    const info: PodInfo = {
+      id: params.id,
+      running: params.running,
+      expiry: addDuration(params.duration)
+    }
+
+    this.pods.set(info.id, info)
+
     log.debug('added pod. ' +
       `id=${info.id} ` +
       `running=${info.running} ` +
-      `expiry=${info.expiry} ` +
-      `now=${new Date().toISOString()}`)
-
-    this.pods.set(info.id, info)
+      `duration=${params.duration} ` +
+      `expiry=${info.expiry}`)
   }
 }

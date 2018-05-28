@@ -21,7 +21,8 @@ export default class HyperClient {
 
   async getPodIP (hash: string): Promise<string> {
     const info = await this.getPodInfo(hash)
-    const [ ip ] = info['status']['podIP']
+    const [ cidr ] = info['status']['podIP']
+    const [ ip ] = cidr.split('/')
     return ip
   }
 }

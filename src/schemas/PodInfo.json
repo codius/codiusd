@@ -9,6 +9,12 @@
     },
     "expiry": {
       "type": "string"
+    },
+    "port": {
+      "type": "number"
+    },
+    "ip": {
+      "type": "string"
     }
   },
   "required": [ "id", "running", "expiry" ],
