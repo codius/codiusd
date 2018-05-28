@@ -1,14 +1,15 @@
 import * as Hapi from 'hapi'
 import * as Boom from 'boom'
 import { Injector } from 'reduct'
-import ManifestParser from '../services/ManifestParser'
+import { PodRequest } from '../schemas/PodRequest'
 import PodManager from '../services/PodManager'
+import ManifestParser from '../services/ManifestParser'
 
 const Enjoi = require('enjoi')
 const PodRequest = require('../schemas/PodRequest.json')
 
 import { create as createLogger } from '../common/log'
-const log = createLogger('PodManager')
+const log = createLogger('pods')
 
 const dropsPerXrp = 1e6
 const xrpPerMonth = Number(process.env.CODIUS_XRP_PER_MONTH) || 10
@@ -17,8 +18,8 @@ const monthsPerSecond = 0.0000003802571
 const dropsPerSecond = dropsPerMonth * monthsPerSecond
 
 export default function (server: Hapi.Server, deps: Injector) {
-  const manifestParser = deps(ManifestParser)
   const podManager = deps(PodManager)
+  const manifestParser = deps(ManifestParser)
 
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit) {
@@ -42,7 +43,10 @@ export default function (server: Hapi.Server, deps: Injector) {
     )
 
     log.debug('podSpec', podSpec)
-    await podManager.startPod(podSpec, duration)
+
+    await podManager.startPod(podSpec, duration,
+      request.payload['manifest']['port'])
+
     return {}
   }
 

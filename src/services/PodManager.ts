@@ -13,13 +13,6 @@ import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
 
 const DEFAULT_INTERVAL = 5000
-const PEERS_PER_QUERY = 5
-
-function addDuration (duration: string, _date?: string): string {
-  const date = _date || new Date().toISOString()
-  return new Date(Number(new Date(date)) + Number(duration) * 1000)
-    .toISOString()
-}
 
 export default class PodManager {
   private config: Config
@@ -56,25 +49,29 @@ export default class PodManager {
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
 
-  async startPod (podSpec: PodSpec, duration: string) {
+  async startPod (podSpec: PodSpec, duration: string, port?: string) {
     // TODO: switch this to an HTTP request
     // await axios('/pod/start', {
     //   method: 'post',
     //   socketPath: '/var/run/hyper.sock'
     // })
 
-    const existing = this.pods.getPod(podSpec.id)
-    if (existing) {
+    if (this.pods.getPod(podSpec.id)) {
       // TODO: check via hyper the code is still running
-      existing.expiry = addDuration(duration, existing.expiry)
+      this.pods.addDurationToPod(podSpec.id, duration)
       return
     }
 
     this.pods.addPod({
       id: podSpec.id,
       running: true,
-      expiry: addDuration(duration)
+      duration
     })
+
+    // TODO: validate regex on port arg incoming
+    if (port && Number(port) > 0) {
+      this.pods.setPodPort(podSpec.id, port)
+    }
 
     const tmpFile = tempy.file({ extension: 'json' })
     await fs.writeJson(tmpFile, podSpec)
@@ -83,6 +80,7 @@ export default class PodManager {
       'run', '-p', tmpFile
     ])
 
-    log.debug(`created pod. ip=${await this.hyper.getPodIP(podSpec.id)}`)
+    const ip = await this.hyper.getPodIP(podSpec.id)
+    this.pods.setPodIP(podSpec.id, ip)
   }
 }

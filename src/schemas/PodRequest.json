@@ -10,6 +10,10 @@
         "version": {
           "type": "string"
         },
+        "port": {
+          "type": "string",
+          "pattern": "[1-9][0-9]*"
+        },
         "machine": {
           "type": "string",
           "enum": [ "small" ]

@@ -8,6 +8,7 @@ export interface PodRequest {
   manifest: {
     name: string;
     version: string;
+    port?: string;
     machine?: "small";
     containers: {
       id: string;
