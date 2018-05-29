@@ -78,14 +78,9 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     try {
       const target = getPod(host)
-      proxy.ws(req, socket, head, { target }, (e: any) => {
-        const statusError = {
-          ECONNREFUSED: [503, 'Service Unavailable'],
-          ETIMEOUT: [504, 'Gateway Timeout']
-        }[e.code]
-
-        if (statusError) {
-          writeError(socket, statusError[0], statusError[1])
+      proxy.ws(req, socket, head, { target }, (error: Error) => {
+        if (error.message !== 'socket hang up') {
+          log.debug(`error in ws proxy. error="${error.message}"`)
         }
       })
     } catch (e) {
