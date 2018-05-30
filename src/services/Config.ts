@@ -1,7 +1,7 @@
 import { Injector } from 'reduct'
 
 export default class Config {
-  readonly hyperctlCmd: string
+  readonly hyperSock: string
   readonly noop: boolean
   readonly port: number
   readonly publicUri: string
@@ -13,7 +13,7 @@ export default class Config {
       env = process.env
     }
 
-    this.hyperctlCmd = env.CODIUS_HYPERCTL_PATH || 'hyperctl'
+    this.hyperSock = env.CODIUS_HYPER_SOCKET || '/var/run/hyper.sock'
     this.noop = env.CODIUS_HYPER_NOOP === 'true'
     this.port = Number(env.CODIUS_PORT) || 3000
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://localhost:' + this.port)

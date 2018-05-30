@@ -1,13 +1,9 @@
 // import axios from 'axios'
 import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
-import { PodInfo } from '../schemas/PodInfo'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
-import Spawner from './Spawner'
 import Config from './Config'
-import * as tempy from 'tempy'
-import * as fs from 'fs-extra'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
@@ -18,13 +14,13 @@ export default class PodManager {
   private config: Config
   private hyper: HyperClient
   private pods: PodDatabase
-  private spawner: Spawner
+  private hyperClient: HyperClient
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
     this.config = deps(Config)
-    this.spawner = deps(Spawner)
+    this.hyperClient = deps(HyperClient)
   }
 
   start () {
@@ -41,8 +37,8 @@ export default class PodManager {
     }
 
     await Promise.all(expired.map(async pod => {
-      log.debug('cleaning up pod. id=' + pod)      
-      await this.spawner.spawn(this.config.hyperctlCmd, [ 'rm', pod ])
+      log.debug('cleaning up pod. id=' + pod)
+      await this.hyperClient.deletePod(pod)
       this.pods.deletePod(pod)
     }))
 
@@ -50,16 +46,14 @@ export default class PodManager {
   }
 
   async startPod (podSpec: PodSpec, duration: string, port?: string) {
-    // TODO: switch this to an HTTP request
-    // await axios('/pod/start', {
-    //   method: 'post',
-    //   socketPath: '/var/run/hyper.sock'
-    // })
-
     if (this.pods.getPod(podSpec.id)) {
-      // TODO: check via hyper the code is still running
-      this.pods.addDurationToPod(podSpec.id, duration)
-      return
+      const isRunning = await this.hyperClient.getPodInfo(podSpec.id)
+        .then((info) => true)
+        .catch(() => false)
+      if (isRunning) {
+        this.pods.addDurationToPod(podSpec.id, duration)
+        return
+      }
     }
 
     this.pods.addPod({
@@ -73,12 +67,7 @@ export default class PodManager {
       this.pods.setPodPort(podSpec.id, port)
     }
 
-    const tmpFile = tempy.file({ extension: 'json' })
-    await fs.writeJson(tmpFile, podSpec)
-
-    await this.spawner.spawn(this.config.hyperctlCmd, [
-      'run', '-p', tmpFile
-    ])
+    await this.hyperClient.runPod(podSpec)
 
     const ip = await this.hyper.getPodIP(podSpec.id)
     this.pods.setPodIP(podSpec.id, ip)
