@@ -97,8 +97,6 @@ export class Manifest {
   }
 
   processValue (value: string): string {
-    // TODO: is this the way we want to do escaping?
-    if (value.startsWith('\\$')) return value.substring(1)
     if (!value.startsWith('$')) return value
 
     const varName = value.substring(1)
