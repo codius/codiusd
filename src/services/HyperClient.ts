@@ -1,8 +1,8 @@
-import * as assert from 'assert'
 import { Injector } from 'reduct'
+import * as Boom from 'boom'
 import Config from './Config'
 import { PodSpec } from '../schemas/PodSpec'
-import { default as axios, AxiosResponse } from 'axios'
+import axios from 'axios'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('HyperClient')
@@ -43,45 +43,51 @@ export default class HyperClient {
   }
 
   async getPodIP (hash: string): Promise<string> {
+    if (this.config.noop) return ''
     const info = await this.getPodInfo(hash)
     const [ cidr ] = info.status.podIP
     const [ ip ] = cidr.split('/')
     return ip
   }
 
-  createPod (podSpec: PodSpec): Promise<void> {
-    return axios.request({
+  async createPod (podSpec: PodSpec): Promise<void> {
+    if (this.config.noop) return
+    const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
       url: '/pod/create',
       data: podSpec
-    }).then(validateResponseCode)
+    })
+    if (res.data.Code !== 0) {
+      throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
+    }
   }
 
-  startPod (podId: string): Promise<void> {
-    return axios.request({
+  async startPod (podId: string): Promise<void> {
+    if (this.config.noop) return
+    await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
       url: '/pod/start',
       params: { podId }
-    }).then(() => undefined)
+    })
   }
 
-  runPod (podSpec: PodSpec): Promise<void> {
-    return this.createPod(podSpec)
-      .then(() => this.startPod(podSpec.id))
+  async runPod (podSpec: PodSpec): Promise<void> {
+    await this.createPod(podSpec)
+    await this.startPod(podSpec.id)
   }
 
-  deletePod (podId: string): Promise<void> {
-    return axios.request({
+  async deletePod (podId: string): Promise<void> {
+    if (this.config.noop) return
+    const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'delete',
       url: '/pod',
       params: { podId }
-    }).then(validateResponseCode)
+    })
+    if (res.data.Code !== 0) {
+      throw Boom.serverUnavailable('Could not delete pod: hyper error code=' + res.data.Code)
+    }
   }
-}
-
-function validateResponseCode (res: AxiosResponse): void {
-  assert.equal(res.data.Code, 0)
 }
