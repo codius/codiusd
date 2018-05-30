@@ -16,7 +16,7 @@ export default class Config {
     this.hyperSock = env.CODIUS_HYPER_SOCKET || '/var/run/hyper.sock'
     this.noop = env.CODIUS_HYPER_NOOP === 'true'
     this.port = Number(env.CODIUS_PORT) || 3000
-    this.publicUri = env.CODIUS_PUBLIC_URI || ('http://localhost:' + this.port)
+    this.publicUri = env.CODIUS_PUBLIC_URI || ('http://local.codius.org:' + this.port)
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : []
