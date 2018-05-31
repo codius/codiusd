@@ -36,8 +36,6 @@ export default class PeerFinder {
           const res = await axios.post(peer + '/peers/discover', {
             peers: [ this.identity.getUri() ]
           })
-          const memory = await axios.get(peer + '/memory')
-          log.info('memory usage', memory.data)
           this.peerDb.addPeers(res.data.peers)
         }
       }
