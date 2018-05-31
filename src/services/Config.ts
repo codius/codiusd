@@ -6,6 +6,7 @@ export default class Config {
   readonly port: number
   readonly publicUri: string
   readonly codiusRoot: string
+  readonly memdownPersist: boolean
   readonly bootstrapPeers: string
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
@@ -19,6 +20,7 @@ export default class Config {
     this.port = Number(env.CODIUS_PORT) || 3000
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://local.codius.org:' + this.port)
     this.codiusRoot = env.CODIUS_ROOT || '/var/lib/codius'
+    this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : []

@@ -21,7 +21,13 @@ export default class App {
     this.podManager = deps(PodManager)
 
     // Create root directory if it doesn't exist
-    mkdir(this.config.codiusRoot, 0o755)
+    try {
+      mkdir(this.config.codiusRoot, 0o755)
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        throw err
+      }
+    }
   }
 
   async start () {

@@ -1,6 +1,8 @@
 import { resolve as resolvePath } from 'path'
-import * as level from 'level'
-import { LevelUp } from 'levelup'
+import levelup, { LevelUp } from 'levelup'
+import leveldown from 'leveldown'
+import memdown from 'memdown'
+import encode from 'encoding-down'
 import { Injector } from 'reduct'
 import Config from '../services/Config'
 
@@ -15,7 +17,14 @@ export default class CodiusDB {
 
   constructor (deps: Injector) {
     this.config = deps(Config)
-    this.db = level(resolvePath(this.config.codiusRoot, 'codius.db'))
+
+    let backend
+    if (this.config.memdownPersist) {
+      backend = memdown()
+    } else {
+      backend = leveldown(resolvePath(this.config.codiusRoot, 'codius.db'))
+    }
+    this.db = levelup(encode(backend, { valueEncoding: 'json' }))
   }
 
   // Peer methods
@@ -31,17 +40,24 @@ export default class CodiusDB {
     await this.delete(PEERS_KEY)
   }
 
-    // Save and Load serialized values
-  async saveValue (key: string, value: any) {
-    await this.set(key, JSON.stringify(value))
+  // Save and Load serialized values
+  async saveValue (key: string, value: {}) {
+    const existing = await this.get(key)
+    if (existing) {
+      if (typeof existing !== typeof value) {
+        throw TypeError
+      }
+      await this.delete(key)
+    }
+    await this.set(key, value)
   }
 
-  async loadValue (key: string, defaultValue?: any) {
+  async loadValue (key: string, defaultValue: {}) {
     const value = await this.get(key)
     if (!value) {
-      return defaultValue ? defaultValue : ''
+      return defaultValue
     }
-    return JSON.parse(value)
+    return value
   }
 
     // Low Level Util
@@ -56,7 +72,7 @@ export default class CodiusDB {
     }
   }
 
-  private async set (key: string, data: string) {
+  private async set (key: string, data: {}) {
     await this.db.put(key, data)
   }
 
