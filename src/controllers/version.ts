@@ -8,8 +8,8 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getVersion (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
-      name: ver.getVersion(),
-      version: ver.getImplementationName()
+      name: ver.getImplementationName(),
+      version: ver.getVersion()
     }
   }
 
