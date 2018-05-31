@@ -1,0 +1,399 @@
+#!/usr/bin/perl -w
+
+=encoding utf8
+
+=head1 Why should you read this book?
+
+If you write shell scripts to do the same processing for different
+input, then GNU B<parallel> will make your life easier and make your
+scripts run faster.
+
+The book is written so you get the juicy parts first: The goal is that
+you read just enough to get you going. GNU B<parallel> has an
+overwhelming amount of special features to help in different
+situations, and to avoid overloading you with information, the most
+used features are presented first.
+
+All the examples are tested in Bash, and most will work in other
+shells, too, but there are a few exceptions. So you are recommened to
+use Bash while testing out the examples.
+
+
+=head1 Learn GNU Parallel in 5 minutes
+
+You just need to run commands in parallel. You do not care about fine
+tuning.
+
+To get going please run this to make some example files:
+
+  # If your system does not have 'seq', replace 'seq' with 'jot'
+  seq 5 | parallel seq {} '>' example.{}
+
+=head2 Input sources
+
+GNU B<parallel> reads values from input sources. One input source is
+the command line. The values are put after B<:::> :
+
+  parallel echo ::: 1 2 3 4 5
+
+This makes it easy to run the same program on some files:
+
+  parallel wc ::: example.*
+
+If you give multiple B<:::>s, GNU B<parallel> will generate all
+combinations:
+
+  parallel wc ::: -l -c ::: example.*
+
+GNU B<parallel> can also read the values from stdin (standard input):
+
+  seq 5 | parallel echo
+
+
+=head2 Building the command line
+
+The command line is put before the B<:::>. It can contain contain a
+command and options for the command:
+
+  parallel wc -l ::: example.*
+
+The command can contain multiple programs. Just remember to quote
+characters that are interpreted by the shell (such as B<;>):
+
+  parallel echo counting lines';' wc -l ::: example.*
+
+The value will normally be appended to the command, but can be placed
+anywhere by using the replacement string B<{}>:
+
+  parallel echo counting {}';' wc -l {} ::: example.*
+
+When using multiple input sources you use the positional replacement
+strings B<{1}> and B<{2}>:
+
+  parallel echo count {1} in {2}';' wc {1} {2} ::: -l -c ::: example.*
+
+You can check what will be run with B<--dry-run>:
+
+  parallel --dry-run echo count {1} in {2}';' wc {1} {2} ::: -l -c ::: example.*
+
+This is a good idea to do for every command until you are comfortable
+with GNU B<parallel>.
+
+=head2 Controlling the output
+
+The output will be printed as soon as the command completes. This
+means the output may come in a different order than the input:
+
+  parallel sleep {}';' echo {} done ::: 5 4 3 2 1
+
+You can force GNU B<parallel> to print in the order of the values with
+B<--keep-order>/B<-k>. This will still run the commands in parallel.
+The output of the later jobs will be delayed, until the earlier jobs
+are printed:
+
+  parallel -k sleep {}';' echo {} done ::: 5 4 3 2 1
+
+
+=head2 Controlling the execution
+
+If your jobs are compute intensive, you will most likely run one job
+for each core in the system. This is the default for GNU B<parallel>.
+
+But sometimes you want more jobs running. You control the number of
+job slots with B<-j>. Give B<-j> the number of jobs to run in
+parallel:
+
+  parallel -j50 \
+    wget http://ftpmirror.gnu.org/parallel/parallel-{1}{2}22.tar.bz2 \
+    ::: 2012 2013 2014 2015 2016 \
+    ::: 01 02 03 04 05 06 07 08 09 10 11 12
+
+
+=head2 Pipe mode
+
+GNU B<parallel> can also pass blocks of data to commands on stdin
+(standard input):
+
+  seq 1000000 | parallel --pipe wc
+
+This can be used to process big text files. By default GNU B<parallel>
+splits on \n (newline) and passes a block of around 1 MB to each job.
+
+
+=head2 That's it
+
+You have now learned the basic use of GNU B<parallel>. This will
+probably cover most cases of your use of GNU B<parallel>.
+
+The rest of this document will go into more details on each of the
+sections and cover special use cases.
+
+
+=head1 Learn GNU Parallel in an hour
+
+In this part we will dive deeper into what you learned in the first 5 minutes.
+
+To get going please run this to make some example files:
+
+  seq 6 > seq6
+  seq 6 -1 1 > seq-6
+
+=head2 Input sources
+
+On top of the command line, input sources can also be stdin (standard
+input or '-'), files and fifos and they can be mixed. Files are given
+after B<-a> or B<::::>. So these all do the same:
+
+  parallel echo Dice1={1} Dice2={2} ::: 1 2 3 4 5 6 ::: 6 5 4 3 2 1
+  parallel echo Dice1={1} Dice2={2} :::: <(seq 6) :::: <(seq 6 -1 1)
+  parallel echo Dice1={1} Dice2={2} :::: seq6 seq-6
+  parallel echo Dice1={1} Dice2={2} :::: seq6 :::: seq-6
+  parallel -a seq6 -a seq-6 echo Dice1={1} Dice2={2}
+  parallel -a seq6 echo Dice1={1} Dice2={2} :::: seq-6
+  parallel echo Dice1={1} Dice2={2} ::: 1 2 3 4 5 6 :::: seq-6
+  cat seq-6 | parallel echo Dice1={1} Dice2={2} :::: seq6 -
+
+If stdin (standard input) is the only input source, you do not need the '-':
+
+  cat seq6 | parallel echo Dice1={1}
+
+=head3 Linking input sources
+
+You can link multiple input sources with B<:::+> and B<::::+>:
+
+  parallel echo {1}={2} ::: I II III IV V VI :::+ 1 2 3 4 5 6
+  parallel echo {1}={2} ::: I II III IV V VI ::::+ seq6
+
+The B<:::+> (and B<::::+>) will link each value to the corresponding
+value in the previous input source, so value number 3 from the first
+input source will be linked to value number 3 from the second input
+source.
+
+You can combine B<:::+> and B<:::>, so you link 2 input sources, but
+generate all combinations with other input sources:
+
+  parallel echo Dice1={1}={2} Dice2={3}={4} ::: I II III IV V VI ::::+ seq6 \
+    ::: VI V IV III II I ::::+ seq-6
+
+
+=head2 Building the command line
+
+=head3 The command
+
+The command can be a script, a binary or a Bash function if the
+function is exported using B<export -f>:
+
+  # Works only in Bash
+  my_func() {
+    echo in my_func "$1"
+  }
+  export -f my_func
+  parallel my_func ::: 1 2 3
+
+If the command is complex, it often improves readability to make it
+into a function.
+
+
+=head3 The replacement strings
+
+GNU B<parallel> has some replacement strings to make it easier to
+refer to the input read from the input sources.
+
+If the input is B<mydir/mysubdir/myfile.myext> then:
+
+  {} = mydir/mysubdir/myfile.myext
+  {.} = mydir/mysubdir/myfile
+  {/} = myfile.myext
+  {//} = mydir/mysubdir
+  {/.} = myfile
+  {#} = the sequence number of the job
+  {%} = the job slot number
+
+When a job is started it gets sequence number that starts at 1 and
+increases with 1 for each new job. The job also gets assigned a slot
+number. This number is from 1 to the number of jobs running in
+parallel. It is unique between the running jobs, but is re-used as
+soon as a job finishes.
+
+=head4 The positional replacement strings
+
+The replacement strings have corresponding positional replacement
+strings. If the value from the 3rd input source is
+B<mydir/mysubdir/myfile.myext>:
+
+  {3} = mydir/mysubdir/myfile.myext
+  {3.} = mydir/mysubdir/myfile
+  {3/} = myfile.myext
+  {3//} = mydir/mysubdir
+  {3/.} = myfile
+
+So the number of the input source is simply prepended inside the {}'s.
+
+
+=head1 Replacement strings
+
+--plus replacement strings
+
+change the replacement string (-I --extensionreplace --basenamereplace --basenamereplace --dirnamereplace --basenameextensionreplace --seqreplace --slotreplace
+
+--header with named replacement string
+
+{= =}
+
+Dynamic replacement strings
+
+=head2 Defining replacement strings
+
+
+
+
+=head2 Copying environment
+
+env_parallel
+
+=head2 Controlling the output
+
+=head3 parset
+
+B<parset> is a shell function to get the output from GNU B<parallel>
+into shell variables.
+
+B<parset> is fully supported for B<Bash/Zsh/Ksh> and partially supported
+for B<ash/dash>. I will assume you run B<Bash>.
+
+To activate B<parset> you have to run:
+
+  . `which env_parallel.bash`
+
+(replace B<bash> with your shell's name).
+
+Then you can run:
+
+  parset a,b,c seq ::: 4 5 6
+  echo "$c"
+
+or:
+
+  parset 'a b c' seq ::: 4 5 6
+  echo "$c"
+
+If you give a single variable, this will become an array:
+
+  parset arr seq ::: 4 5 6
+  echo "${arr[1]}"
+
+B<parset> has one limitation: If it reads from a pipe, the output will
+be lost.
+
+  echo This will not work | parset myarr echo
+  echo Nothing: "${myarr[*]}"
+
+Instead you can do this:
+
+  echo This will work > tempfile
+  parset myarr echo < tempfile
+  echo ${myarr[*]}
+
+sql
+cvs
+
+
+=head2 Controlling the execution
+
+--dryrun -v
+
+=head2 Remote execution
+
+For this section you must have B<ssh> access with no password to 2
+servers: B<$server1> and B<$server2>.
+
+  server1=server.example.com
+  server2=server2.example.net
+
+So you must be able to do this:
+
+  ssh $server1 echo works
+  ssh $server2 echo works
+
+It can be setup by running 'ssh-keygen -t dsa; ssh-copy-id $server1'
+and using an empty passphrase. Or you can use B<ssh-agent>.
+
+=head3 Workers
+
+=head3 --transferfile
+
+B<--transferfile> I<filename> will transfer I<filename> to the
+worker. I<filename> can contain a replacement string:
+
+  parallel -S $server1,$server2 --transferfile {} wc ::: example.*
+  parallel -S $server1,$server2 --transferfile {2} \
+     echo count {1} in {2}';' wc {1} {2} ::: -l -c ::: example.*
+
+A shorthand for B<--transferfile {}> is B<--transfer>.
+
+=head3 --return
+
+
+
+=head3 --cleanup
+
+A shorthand for B<--transfer --return {} --cleanup> is B<--trc {}>.
+
+
+=head2 Pipe mode
+
+--pipepart
+
+
+=head2 That's it
+
+=head1 Advanced usage
+
+parset fifo, cmd substtition, arrayelements, array with var names and cmds, env_parset
+
+
+env_parallel
+
+Interfacing with R.
+
+Interfacing with JSON/jq
+
+4dl() {
+  board="$(printf -- '%s' "${1}" | cut -d '/' -f4)"
+  thread="$(printf -- '%s' "${1}" | cut -d '/' -f6)"
+  wget -qO- "https://a.4cdn.org/${board}/thread/${thread}.json" |
+    jq -r '
+      .posts
+      | map(select(.tim != null))
+      | map((.tim | tostring) + .ext)
+      | map("https://i.4cdn.org/'"${board}"'/"+.)[]
+    ' |
+      parallel --gnu -j 0 wget -nv
+}
+
+Interfacing with XML/?
+
+Interfacing with HTML/?
+
+=head2 Controlling the execution
+
+--termseq
+
+
+=head2 Remote execution
+
+seq 10 | parallel --sshlogin 'ssh -i "key.pem" a@b.com' echo 
+
+seq 10 | PARALLLEL_SSH='ssh -i "key.pem"' parallel --sshlogin a@b.com echo 
+
+seq 10 | parallel --ssh 'ssh -i "key.pem"' --sshlogin a@b.com echo 
+
+ssh-agent
+
+The sshlogin file format
+
+Check if servers are up
+
+
+
+=cut

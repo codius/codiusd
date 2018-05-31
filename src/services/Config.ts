@@ -5,7 +5,7 @@ export default class Config {
   readonly noop: boolean
   readonly port: number
   readonly publicUri: string
-  readonly bootstrapPeers: string
+  readonly bootstrapPeers: [string]
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -19,6 +19,6 @@ export default class Config {
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://localhost:' + this.port)
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
-      : []
+      : ['http://localhost:5001', 'http://localhost:5002']
   }
 }

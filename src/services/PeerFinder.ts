@@ -3,6 +3,8 @@ import PeerDatabase from './PeerDatabase'
 import Identity from './Identity'
 import { sampleSize } from 'lodash'
 import axios from 'axios'
+import os = require('os')
+var osUtils = require('os-utils')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerFinder')
@@ -25,8 +27,7 @@ export default class PeerFinder {
   }
 
   async run () {
-    // log.debug('searching peers')
-
+    log.debug('searching peers')
     try {
       const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
 
@@ -35,13 +36,14 @@ export default class PeerFinder {
           const res = await axios.post(peer + '/peers/discover', {
             peers: [ this.identity.getUri() ]
           })
+          const memory = await axios.get(peer + '/memory')
+          log.info('memory usage', memory.data)
           this.peerDb.addPeers(res.data.peers)
         }
       }
     } catch (err) {
       log.error(err)
     }
-
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
 }

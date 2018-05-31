@@ -1,7 +1,6 @@
 import { Injector } from 'reduct'
 import Config from './Config'
 import Identity from './Identity'
-
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerDatabase')
 
@@ -13,23 +12,26 @@ export default class PeerDatabase {
   constructor (deps: Injector) {
     this.config = deps(Config)
     this.identity = deps(Identity)
-
-    for (let peer of this.config.bootstrapPeers) {
-      this.peers.add(peer)
+    log.debug('bootstrapPeers', this.config.bootstrapPeers, this.config.publicUri)
+    if (this.config.bootstrapPeers.indexOf(this.config.publicUri) === -1) {
+      for (let peer of this.config.bootstrapPeers) {
+        log.debug('adding default configs', peer)
+        this.peers.add(peer)
+      }
     }
   }
 
   public getPeers () {
+    // Get peers which are full depending on memory usage.get
     return Array.from(this.peers).slice(0, 10)
   }
 
-  public addPeers (peers: string[]) {
+  public async addPeers (peers: string[]) {
     const previousCount = this.peers.size
     for (const peer of peers) {
       if (peer === this.identity.getUri()) {
         continue
       }
-
       this.peers.add(peer)
     }
 
