@@ -1,3 +1,4 @@
+import { resolve as resolvePath } from 'path'
 import * as level from 'level'
 import { LevelUp } from 'levelup'
 import { Injector } from 'reduct'
@@ -14,12 +15,7 @@ export default class CodiusDB {
 
   constructor (deps: Injector) {
     this.config = deps(Config)
-    this.db = level(`${this.config.codiusRoot}/codius.db`, function (err, db) {
-      if (err) {
-        log.error('Opening LevelDB file failed')
-        throw err
-      }
-    })
+    this.db = level(resolvePath(this.config.codiusRoot, 'codius.db'))
   }
 
   // Peer methods
