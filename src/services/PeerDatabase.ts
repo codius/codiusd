@@ -2,6 +2,7 @@ import { Injector } from 'reduct'
 import Config from './Config'
 import Identity from './Identity'
 import CodiusDB from '../util/Codiusdb'
+import { choices } from '../common/random'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerDatabase')
@@ -24,8 +25,8 @@ export default class PeerDatabase {
     this.loadPeersFromDB()
   }
 
-  public getPeers () {
-    return Array.from(this.peers).slice(0, 10)
+  public getPeers (numPeers = 10) {
+    return choices(Array.from(this.peers), numPeers)
   }
 
   public addPeers (peers: string[]) {
