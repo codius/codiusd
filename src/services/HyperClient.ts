@@ -50,6 +50,27 @@ export default class HyperClient {
     return ip
   }
 
+  async pullImages (podSpec: PodSpec): Promise<void> {
+    if (this.config.noop) return
+    for (const container of podSpec.containers) {
+      await this.pullImage(container.image)
+    }
+  }
+
+  async pullImage (image: string): Promise<void> {
+    if (this.config.noop) return
+    log.info(`pulling image=${image}`)
+    const start = Date.now()
+    await axios.request({
+      socketPath: this.config.hyperSock,
+      method: 'post',
+      url: '/image/create',
+      params: { imageName: image }
+    })
+    const elapsed = Date.now() - start
+    log.info(`pulled image=${image} in ${elapsed}ms`)
+  }
+
   async createPod (podSpec: PodSpec): Promise<void> {
     if (this.config.noop) return
     const res = await axios.request({
@@ -74,7 +95,11 @@ export default class HyperClient {
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
-    await this.createPod(podSpec)
+    await this.createPod(podSpec).catch(async (err) => {
+      log.warn(`pulling images after error="${err.message}"`)
+      await this.pullImages(podSpec)
+      await this.createPod(podSpec)
+    })
     await this.startPod(podSpec.id)
   }
 

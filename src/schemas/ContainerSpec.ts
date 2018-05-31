@@ -6,7 +6,7 @@
 
 export interface ContainerSpec {
   name?: string;
-  image?: string;
+  image: string;
   command?: string[];
   workdir?: string;
   environment?: {
