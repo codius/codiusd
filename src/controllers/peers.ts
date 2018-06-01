@@ -5,7 +5,6 @@ import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
 var os = require('os')
-var osUtils = require('os-utils')
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
