@@ -93,7 +93,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     return {
       manifestHash: podSpec.id,
-      price
+      price: String(price)
     }
   }
 
