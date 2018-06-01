@@ -73,3 +73,4 @@ sudo npm install -g codiusd
 * [x] change manifest hash encoding to base32
 * [ ] publish @sharafian/cog and pull from actual npm
 * [ ] proxy endpoints based on manifest hash to the contract's IP
+* [x] persist peers between sessions
