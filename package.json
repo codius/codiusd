@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/codius/codiusd#readme",
   "dependencies": {
-    "@sharafian/cog": "0.0.3",
+    "@sharafian/cog": "0.0.4",
     "axios": "github:axios/axios",
     "canonical-json": "0.0.4",
     "debug": "^3.1.0",
