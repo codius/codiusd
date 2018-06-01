@@ -1,18 +1,26 @@
 import { PodSpec } from '../schemas/PodSpec'
 import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
+import Config from './Config'
 import ManifestHash from './ManifestHash'
 import { createHash } from 'crypto'
 import * as Boom from 'boom'
 const canonicalJson = require('canonical-json')
 
 export interface ManifestOptions {
-  hash: string
+  deps: Injector
   manifest: object
   privateManifest: object
 }
 
+export interface Env {
+  env: string,
+  value: string
+}
+
 export class Manifest {
+  private deps: Injector
+  private config: Config
   private hash: string
   private manifest: object
   private privateManifest: object
@@ -24,8 +32,9 @@ export class Manifest {
   }
 
   constructor (opts: ManifestOptions) {
-    this.hash = opts.hash
     this.manifest = opts.manifest
+    this.config = opts.deps(Config)
+    this.hash = opts.deps(ManifestHash).hashManifest(this.manifest)
     this.privateManifest = opts.privateManifest
   }
 
@@ -52,19 +61,42 @@ export class Manifest {
     }
   }
 
-  processEnv (environment: object): Array<object> {
-    if (!environment) return []
-    return Object.keys(environment).map((key) => {
+  processEnv (environment: object): Array<Env> {
+    const hostEnv = [{
+      env: 'CODIUS',
+      value: 'true'
+    }, {
+      env: 'CODIUS_HOST',
+      // TODO: if this URI resolves to 127.0.0.1 it won't be accesible to
+      // the contract from inside of hyper
+      value: this.config.publicUri
+    }, {
+      env: 'CODIUS_MANIFEST_HASH',
+      value: this.hash
+    }, {
+      env: 'CODIUS_MANIFEST',
+      value: JSON.stringify(this.manifest)
+    }]
+
+    if (!environment) return hostEnv
+
+    const manifestEnv = Object.keys(environment).map((key) => {
+      if (key.startsWith('CODIUS')) {
+        throw Boom.badData('environment variables starting in ' +
+          '"CODIUS" are reserved. ' +
+          `var=${key}`)
+      }
+
       return {
         env: key,
         value: this.processValue(environment[key])
       }
     })
+
+    return ([] as Array<Env>).concat(hostEnv, manifestEnv)
   }
 
   processValue (value: string): string {
-    // TODO: is this the way we want to do escaping?
-    if (value.startsWith('\\$')) return value.substring(1)
     if (!value.startsWith('$')) return value
 
     const varName = value.substring(1)
@@ -109,14 +141,17 @@ export class Manifest {
 }
 
 export default class ManifestParser {
-  private hash: ManifestHash
+  private deps: Injector
 
   constructor (deps: Injector) {
-    this.hash = deps(ManifestHash)
+    this.deps = deps
   }
 
   manifestToPodSpec (manifest: object, privateManifest: object): PodSpec {
-    const hash = this.hash.hashManifest(manifest)
-    return new Manifest({ hash, manifest, privateManifest }).toPodSpec()
+    return new Manifest({
+      deps: this.deps,
+      manifest,
+      privateManifest
+    }).toPodSpec()
   }
 }

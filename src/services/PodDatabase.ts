@@ -85,7 +85,7 @@ export default class PodDatabase {
     const info: PodInfo = {
       id: params.id,
       running: params.running,
-      expiry: addDuration(params.duration)
+      expiry: addDuration(params.duration),
       memory: params.memory
     }
 

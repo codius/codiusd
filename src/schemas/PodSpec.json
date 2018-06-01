@@ -21,9 +21,10 @@
       "type": "array",
       "items": {
         "$ref": "./ContainerSpec.json"
-      }
+      },
+      "minItems": 1
     }
   },
-  "required": [ "id" ],
+  "required": [ "id", "containers" ],
   "additionalProperties": false
 }

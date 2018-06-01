@@ -63,7 +63,7 @@ sudo npm install -g codiusd
 * [x] Figure out encoding to hash manifest 
 * [ ] How to escape the variable interpolation in manifest parser
 * [x] How to fill in the values for private sha256 variables
-* [ ] Switch hyperctl to hyper.sock http requests
+* [x] Switch hyperctl to hyper.sock http requests
 * [ ] Check whether hyper instance is still running before adding duration
 * [ ] How do pods spend money?
 * [ ] add port field
@@ -73,3 +73,4 @@ sudo npm install -g codiusd
 * [x] change manifest hash encoding to base32
 * [ ] publish @sharafian/cog and pull from actual npm
 * [ ] proxy endpoints based on manifest hash to the contract's IP
+* [x] persist peers between sessions
