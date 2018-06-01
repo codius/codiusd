@@ -28,10 +28,6 @@ export default class PeerDatabase {
     return Array.from(this.peers).slice(0, 10)
   }
 
-  public checkFullMem(freeMem: number, totalMem: number) {
-    return (freeMem/totalMem) > MAX_MEMORY_FRACTION
-  }
-
   public async addPeers (peers: string[]) {
     const previousCount = this.peers.size
     const memoryMap = {}
@@ -40,12 +36,10 @@ export default class PeerDatabase {
         continue
       }
       const memory = await axios.get(peer + '/memory')
-      log.info('memory usage', memory.data)
-      this.memoryMap.set(peer, memory.data.freeMem/memory.data.totalMem)
+      this.memoryMap.set(peer, memory.data.freeMem / memory.data.totalMem)
 
       this.peers.add(peer)
     }
-    log.info('memoryMap', this.memoryMap)
     if (this.peers.size > previousCount) {
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }

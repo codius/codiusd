@@ -20,7 +20,7 @@ export default class Spawner {
       return
     }
 
-    const start = spawn(cmd, args)    
+    const start = spawn(cmd, args)
 
     start.stdout.pipe(process.stderr)
     start.stderr.pipe(process.stderr)

@@ -4,7 +4,6 @@ import Identity from './Identity'
 import { sampleSize } from 'lodash'
 import axios from 'axios'
 import os = require('os')
-var osUtils = require('os-utils')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerFinder')
@@ -27,7 +26,7 @@ export default class PeerFinder {
   }
 
   async run () {
-    log.debug('searching peers')
+    // log.debug('searching peers')
     try {
       const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
 

@@ -4,7 +4,7 @@ import { Injector } from 'reduct'
 import { PodRequest } from '../schemas/PodRequest'
 import PodManager from '../services/PodManager'
 import ManifestParser from '../services/ManifestParser'
-
+import os = require('os')
 const Enjoi = require('enjoi')
 const PodRequest = require('../schemas/PodRequest.json')
 
@@ -16,7 +16,7 @@ const xrpPerMonth = Number(process.env.CODIUS_XRP_PER_MONTH) || 10
 const dropsPerMonth = xrpPerMonth * dropsPerXrp
 const monthsPerSecond = 0.0000003802571
 const dropsPerSecond = dropsPerMonth * monthsPerSecond
-
+const MAX_MEMORY_FRACTION = 0.75
 export default function (server: Hapi.Server, deps: Injector) {
   const podManager = deps(PodManager)
   const manifestParser = deps(ManifestParser)
@@ -43,10 +43,14 @@ export default function (server: Hapi.Server, deps: Injector) {
     )
 
     log.debug('podSpec', podSpec)
-
+    const totalMem = os.totalmem()
+    const podMem = podSpec.resource.vcpu * podSec.resource.memory
+    if ((podManager.memoryUsed + podMem) / totalMem > MAX_MEMORY_FRACTION) {
+      throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
+    }
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
-
+    
     return {}
   }
 
@@ -64,7 +68,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       },
       payload: {
         allow: 'application/json',
-        output: 'data',
+        output: 'data'
       }
     }
   })

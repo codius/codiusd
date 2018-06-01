@@ -11,7 +11,8 @@ function addDuration (duration: string, _date?: string): string {
 export interface AddPodParams {
   id: string,
   running: boolean,
-  duration: string
+  duration: string,
+  memory: number
 }
 
 export default class PodDatabase {
@@ -47,7 +48,7 @@ export default class PodDatabase {
     }
 
     info.expiry = addDuration(duration, info.expiry)
-  
+
     log.debug('added duration to pod. ' +
       `id=${info.id} ` +
       `duration=${duration} ` +
@@ -85,6 +86,7 @@ export default class PodDatabase {
       id: params.id,
       running: params.running,
       expiry: addDuration(params.duration)
+      memory: params.memory
     }
 
     this.pods.set(info.id, info)
@@ -93,6 +95,8 @@ export default class PodDatabase {
       `id=${info.id} ` +
       `running=${info.running} ` +
       `duration=${params.duration} ` +
-      `expiry=${info.expiry}`)
+      `expiry=${info.expiry} ` + 
+      `memory=${info.memory} `)  
+      
   }
 }

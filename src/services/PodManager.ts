@@ -19,12 +19,13 @@ export default class PodManager {
   private hyper: HyperClient
   private pods: PodDatabase
   private spawner: Spawner
-
+  private memoryUSed: Number
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
     this.config = deps(Config)
     this.spawner = deps(Spawner)
+    this.memoryUsed = 0
   }
 
   start () {
@@ -41,11 +42,17 @@ export default class PodManager {
     }
 
     await Promise.all(expired.map(async pod => {
-      log.debug('cleaning up pod. id=' + pod)      
+      log.debug('cleaning up pod. id=' + pod)
       await this.spawner.spawn(this.config.hyperctlCmd, [ 'rm', pod ])
       this.pods.deletePod(pod)
     }))
-
+    const runningPods = this.pods.getRunningPods()
+    let memory = 0
+    for (let i = 0; i < runningPods.length; i++) {
+      let pod = this.pods.getPod(runningPods[i])
+      memory += pod.memory
+    }
+    this.memoryUsed = memory
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
 
@@ -66,6 +73,7 @@ export default class PodManager {
       id: podSpec.id,
       running: true,
       duration
+      memory: podSpec.resource.vcpu * podSec.resource.memory
     })
 
     // TODO: validate regex on port arg incoming
