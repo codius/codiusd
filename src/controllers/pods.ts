@@ -111,7 +111,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       },
       payload: {
         allow: 'application/json',
-        output: 'data',
+        output: 'data'
       }
     }
   })
@@ -130,7 +130,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       },
       payload: {
         allow: 'application/json',
-        output: 'data',
+        output: 'data'
       }
     }
   })

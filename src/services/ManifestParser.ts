@@ -1,5 +1,4 @@
 import { PodSpec } from '../schemas/PodSpec'
-import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
 import Config from './Config'
 import ManifestHash from './ManifestHash'
@@ -19,7 +18,6 @@ export interface Env {
 }
 
 export class Manifest {
-  private deps: Injector
   private config: Config
   private hash: string
   private manifest: object
@@ -43,7 +41,7 @@ export class Manifest {
       id: this.hash,
       resource: this.machineToResource(this.manifest['machine']),
       containers: this.manifest['containers']
-        .map(this.processContainer.bind(this)),
+        .map(this.processContainer.bind(this))
     }
   }
 
@@ -126,10 +124,10 @@ export class Manifest {
         .digest('hex')
 
       if (hashPrivateVar !== varSpec.value) {
-        throw Boom.badData('private var does not match hash. ' + 
+        throw Boom.badData('private var does not match hash. ' +
           `var=${value} ` +
           `encoding=${varSpec.encoding} ` +
-          `public-hash=${varSpec.value} ` + 
+          `public-hash=${varSpec.value} ` +
           `hashed-value=${hashPrivateVar}`)
       }
 

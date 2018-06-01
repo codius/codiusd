@@ -47,7 +47,7 @@ export default class PodDatabase {
     }
 
     info.expiry = addDuration(duration, info.expiry)
-  
+
     log.debug('added duration to pod. ' +
       `id=${info.id} ` +
       `duration=${duration} ` +
