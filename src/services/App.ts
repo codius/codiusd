@@ -22,7 +22,9 @@ export default class App {
 
     // Create root directory if it doesn't exist
     try {
-      mkdir(this.config.codiusRoot, 0o755)
+      if (!this.config.memdownPersist) {
+        mkdir(this.config.codiusRoot, 0o755)
+      }
     } catch (err) {
       if (err.code !== 'EEXIST') {
         throw err
