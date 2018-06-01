@@ -79,6 +79,43 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
+  async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
+    const duration = request.query['duration'] || 3600
+    log.debug('got pod options request. duration=' + duration)
+
+    const price = Math.ceil(dropsPerSecond * duration)
+    const podSpec = manifestParser.manifestToPodSpec(
+      request.payload['manifest'],
+      request.payload['private']
+    )
+
+    log.debug('podSpec', podSpec)
+
+    return {
+      manifestHash: podSpec.id,
+      price
+    }
+  }
+
+  server.route({
+    method: 'OPTIONS',
+    path: '/pods',
+    handler: getPodPrice,
+    options: {
+      validate: {
+        payload: Enjoi(PodRequest),
+        failAction: async (req, h, err) => {
+          log.debug('validation error. error=' + (err && err.message))
+          throw Boom.badRequest('Invalid request payload input')
+        }
+      },
+      payload: {
+        allow: 'application/json',
+        output: 'data',
+      }
+    }
+  })
+
   server.route({
     method: 'POST',
     path: '/pods',
