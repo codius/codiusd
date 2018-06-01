@@ -1,7 +1,7 @@
 import { Injector } from 'reduct'
 import Config from './Config'
 import Identity from './Identity'
-import CodiusDB from '../util/Codiusdb'
+import CodiusDB from '../util/CodiusDB'
 import { choices } from '../common/random'
 
 import { create as createLogger } from '../common/log'
