@@ -73,3 +73,29 @@ sudo npm install -g codiusd
 * [x] change manifest hash encoding to base32
 * [ ] publish @sharafian/cog and pull from actual npm
 * [ ] proxy endpoints based on manifest hash to the contract's IP
+
+### Environment Variables
+#### CODIUS_HYPER_SOCKET
+* Type: String
+* Description: The absolute path to the `hyperd` socket.
+* Default: `/var/run/hyper.sock`
+
+#### CODIUS_HYPER_NOOP
+* Type: Boolean
+* Description: Noops all `hyperd` API calls.
+* Default: false
+
+#### CODIUS_PORT
+* Type: [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)
+* Description: The port that codiusd will listen on.
+* Default: 3000
+
+#### CODIUS_PUBLIC_URI
+* Type: String
+* Description: The public URI resolving to this instance of codiusd.
+* Default: `http://local.codius.org:CODIUS_PORT`
+
+#### CODIUS_BOOTSTRAP_PEERS
+* Type: JSON Object
+* Description: List of peers whose values are the URIs that resolve to their Codius instance.
+* Default: [ ]
