@@ -41,7 +41,6 @@ export default class PodManager {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
     this.config = deps(Config)
-    this.memoryUsed = 0
     this.hyperClient = deps(HyperClient)
   }
 
@@ -65,6 +64,11 @@ export default class PodManager {
       this.pods.deletePod(pod)
     }))
     
+    
+    setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
+  }
+
+  public getMemoryUsed () {
     const runningPods = this.pods.getRunningPods()
     let memory = 0
     for (let i = 0; i < runningPods.length; i++) {
@@ -73,12 +77,7 @@ export default class PodManager {
         memory += this.checkPodMem(pod.memory)
       }
     }
-    this.memoryUsed = memory
-    setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
-  }
-
-  public getMemoryUsed () {
-    return this.memoryUsed
+    return memory
   }
 
   async startPod (podSpec: PodSpec, duration: string, port?: string) {

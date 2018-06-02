@@ -47,6 +47,7 @@ export default class PeerDatabase {
     }
     if (this.peers.size > previousCount) {
       this.codiusdb.savePeers([...this.peers])
+      log.info('peers', this.peers)
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
   }
