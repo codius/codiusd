@@ -102,7 +102,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     return {
       manifestHash: podSpec.id,
-      price
+      price: String(price)
     }
   }
 
@@ -120,7 +120,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       },
       payload: {
         allow: 'application/json',
-        output: 'data',
+        output: 'data'
       }
     }
   })

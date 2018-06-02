@@ -1,5 +1,4 @@
 import * as Hapi from 'hapi'
-import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'

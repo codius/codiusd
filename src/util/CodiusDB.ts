@@ -6,9 +6,6 @@ import encode from 'encoding-down'
 import { Injector } from 'reduct'
 import Config from '../services/Config'
 
-import { create as createLogger } from '../common/log'
-const log = createLogger('CodiusDB')
-
 const PEERS_KEY = 'codiusPeers'
 
 export default class CodiusDB {

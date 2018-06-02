@@ -3,7 +3,6 @@ import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
-import Config from './Config'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
@@ -24,7 +23,6 @@ export function checkMemory(resource: any) : number {
   return 512
 }
 export default class PodManager {
-  private config: Config
   private hyper: HyperClient
   private pods: PodDatabase
   private memoryUsed: number
@@ -40,7 +38,6 @@ export default class PodManager {
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
-    this.config = deps(Config)
     this.hyperClient = deps(HyperClient)
   }
 

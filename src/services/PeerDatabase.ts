@@ -26,7 +26,7 @@ export default class PeerDatabase {
 
     }
 
-    this.loadPeersFromDB()
+    this.loadPeersFromDB().catch(err => log.error(err))
   }
 
   public getPeers (numPeers = 10) {
@@ -46,13 +46,17 @@ export default class PeerDatabase {
       this.peers.add(peer)
     }
     if (this.peers.size > previousCount) {
+<<<<<<< HEAD
       this.codiusdb.savePeers([...this.peers])
       log.info('peers', this.peers)
+=======
+      this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
+>>>>>>> f3bd965a4f730fbf4adda1da80369c0cf81198ea
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
   }
 
-  private async loadPeersFromDB() {
+  private async loadPeersFromDB () {
     const peersFromDB = await this.codiusdb.getPeers()
     log.debug(`Loading ${peersFromDB.length} peers from db...`)
     for (let peer of peersFromDB) {

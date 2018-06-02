@@ -4,7 +4,7 @@ export function encode (buffer: Buffer): string {
   return base32.encode(buffer)
     .toString('ascii')
     .toLowerCase()
-    .replace(/=+$/, '')  
+    .replace(/=+$/, '')
 }
 
 export function decode (b32: string): Buffer {
