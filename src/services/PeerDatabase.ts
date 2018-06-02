@@ -8,7 +8,6 @@ import { create as createLogger } from '../common/log'
 const log = createLogger('PeerDatabase')
 import axios from 'axios'
 
-const MAX_MEMORY_FRACTION = 0.75
 export default class PeerDatabase {
   private config: Config
   private identity: Identity
@@ -19,11 +18,10 @@ export default class PeerDatabase {
     this.config = deps(Config)
     this.identity = deps(Identity)
     this.codiusdb = deps(CodiusDB)
-    if (this.config.bootstrapPeers.indexOf(this.config.publicUri) === -1) {
-      for (let peer of this.config.bootstrapPeers) {
+    for (let peer of this.config.bootstrapPeers) {
+      if (peer !== this.config.publicUri) {
         this.peers.add(peer)
       }
-
     }
 
     this.loadPeersFromDB().catch(err => log.error(err))
@@ -46,12 +44,7 @@ export default class PeerDatabase {
       this.peers.add(peer)
     }
     if (this.peers.size > previousCount) {
-<<<<<<< HEAD
-      this.codiusdb.savePeers([...this.peers])
-      log.info('peers', this.peers)
-=======
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
->>>>>>> f3bd965a4f730fbf4adda1da80369c0cf81198ea
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
   }

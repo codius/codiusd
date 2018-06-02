@@ -4,7 +4,8 @@ import { URL } from 'url'
 import { Injector } from 'reduct'
 import { PodRequest } from '../schemas/PodRequest'
 import Config from '../services/Config'
-import PodManager, {checkVCPU, checkMemory} from '../services/PodManager'
+import PodManager from '../services/PodManager'
+import { checkMemory } from '../util/podResourceCheck'
 import PodDatabase from '../services/PodDatabase'
 import ManifestParser from '../services/ManifestParser'
 import os = require('os')
@@ -20,7 +21,6 @@ const xrpPerMonth = Number(process.env.CODIUS_XRP_PER_MONTH) || 10
 const dropsPerMonth = xrpPerMonth * dropsPerXrp
 const monthsPerSecond = 0.0000003802571
 const dropsPerSecond = dropsPerMonth * monthsPerSecond
-const MAX_MEMORY_FRACTION = 0.75
 
 export interface PostPodResponse {
   url: string,
@@ -40,7 +40,15 @@ export default function (server: Hapi.Server, deps: Injector) {
     return hostUrl.href
   }
 
- 
+  function checkIfHostFull(podSpec: any) {
+    const totalMem = os.totalmem()
+    const totalPodMem = checkMemory(podSpec.resource)
+    if((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
+      return true
+    }
+    return false
+  }
+
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     const duration = request.query['duration'] || 3600
@@ -62,14 +70,11 @@ export default function (server: Hapi.Server, deps: Injector) {
       request.payload['private']
     )
 
-    log.debug('podSpec', podSpec)
-    const totalMem = os.totalmem()
-
-    const totalPodMem = checkVCPU(podSpec.resource) * checkMemory(podSpec.resource)
     // throw error if memory usage exceeds available memory
-    if ((podManager.getMemoryUsed() + totalPodMem) * 1000000 / totalMem > MAX_MEMORY_FRACTION) {
+    if (checkIfHostFull(podSpec)) {
       throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
     }
+
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
 

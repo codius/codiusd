@@ -3,25 +3,13 @@ import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
-
+import { checkMemory } from '../util/podResourceCheck'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
 
 const DEFAULT_INTERVAL = 5000
 
-export function checkVCPU(resource: any) : number {
-  if (resource) {
-    return resource.vcpu
-  }
-  return 1
-}
 
-export function checkMemory(resource: any) : number {
-  if (resource) {
-    return resource.memory
-  }
-  return 512
-}
 export default class PodManager {
   private hyper: HyperClient
   private pods: PodDatabase
@@ -92,7 +80,7 @@ export default class PodManager {
       id: podSpec.id,
       running: true,
       duration,
-      memory: checkVCPU(podSpec.resource) * checkMemory(podSpec.resource)
+      memory: checkMemory(podSpec.resource)
     })
 
     // TODO: validate regex on port arg incoming

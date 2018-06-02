@@ -3,12 +3,15 @@ import { Injector } from 'reduct'
 import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
-var os = require('os')
+import * as os from 'os'
+import Config from '../services/Config'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
   const ver = deps(Version) 
   const podManager = deps(PodManager)
+  const config = deps(Config)
+
   async function getPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
       peers: peerDb.getPeers()
@@ -16,12 +19,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
   
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    return {
-      freeMem: os.freemem(),
-      totalMem: os.totalmem(), 
-      podMem: podManager.getMemoryUsed()
-    }
-
+    return (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
   }
 
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {

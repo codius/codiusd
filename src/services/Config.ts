@@ -8,6 +8,7 @@ export default class Config {
   readonly codiusRoot: string
   readonly memdownPersist: boolean
   readonly bootstrapPeers: string
+  readonly maxMemoryFraction: number
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -24,5 +25,6 @@ export default class Config {
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : []
+    this.maxMemoryFraction = Number(env.MAX_MEMORY_FRACTION) || 0.75
   }
 }
