@@ -1,4 +1,5 @@
 import { resolve as resolvePath } from 'path'
+import { PodInfo } from '../schemas/PodInfo'
 import levelup, { LevelUp } from 'levelup'
 import leveldown from 'leveldown'
 import memdown from 'memdown'
@@ -10,6 +11,7 @@ import { create as createLogger } from '../common/log'
 const log = createLogger('CodiusDB')
 
 const PEERS_KEY = 'codiusPeers'
+const PODS_KEY = 'codiusPods'
 
 export default class CodiusDB {
   private config: Config
@@ -25,6 +27,19 @@ export default class CodiusDB {
       backend = leveldown(resolvePath(this.config.codiusRoot, 'codius.db'))
     }
     this.db = levelup(encode(backend, { valueEncoding: 'json' }))
+  }
+
+  // Pod methods
+  async getPods (): Promise<PodInfo[]> {
+    return this.loadValue(PODS_KEY, [])
+  }
+
+  async savePods (pods: PodInfo[]) {
+    await this.saveValue(PODS_KEY, pods)
+  }
+
+  async deletePods () {
+    await this.delete(PODS_KEY)
   }
 
   // Peer methods
