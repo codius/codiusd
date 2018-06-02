@@ -23,6 +23,6 @@ export default class Config {
     this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
-      : ['http://localhost:5001', 'http://localhost:5002']
+      : []
   }
 }
