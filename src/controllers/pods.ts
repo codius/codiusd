@@ -66,6 +66,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     const totalMem = os.totalmem()
 
     const totalPodMem = checkVCPU(podSpec.resource) * checkMemory(podSpec.resource)
+    // throw error if memory usage exceeds available memory
     if ((podManager.getMemoryUsed() + totalPodMem) * 1000000 / totalMem > MAX_MEMORY_FRACTION) {
       throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
     }
