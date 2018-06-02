@@ -1,4 +1,6 @@
+import { Injector } from 'reduct'
 import { PodInfo } from '../schemas/PodInfo'
+import CodiusDB from '../util/CodiusDB'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodDatabase')
 
@@ -16,6 +18,12 @@ export interface AddPodParams {
 
 export default class PodDatabase {
   private pods: Map<string, PodInfo> = new Map()
+  private codiusdb: CodiusDB
+
+  constructor (deps: Injector) {
+    this.codiusdb = deps(CodiusDB)
+    this.loadPodsFromDB()
+  }
 
   public getPod (id: string): PodInfo | void {
     return this.pods.get(id)
@@ -94,5 +102,13 @@ export default class PodDatabase {
       `running=${info.running} ` +
       `duration=${params.duration} ` +
       `expiry=${info.expiry}`)
+  }
+
+  private async loadPodsFromDB () {
+    const podsFromDB = await this.codiusdb.getPods()
+    log.debug(`Loading ${podsFromDB.length} pods from db...`)
+    for (let pod of podsFromDB) {
+      this.pods.set(pod.id, pod)
+    }
   }
 }
