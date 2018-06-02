@@ -13,7 +13,6 @@ const Enjoi = require('enjoi')
 const PodRequest = require('../schemas/PodRequest.json')
 
 import { create as createLogger } from '../common/log'
-import { PodSpec } from '../schemas/PodSpec';
 const log = createLogger('pods')
 
 const dropsPerXrp = 1e6
@@ -40,10 +39,10 @@ export default function (server: Hapi.Server, deps: Injector) {
     return hostUrl.href
   }
 
-  function checkIfHostFull(podSpec: any) {
+  function checkIfHostFull (podSpec: any) {
     const totalMem = os.totalmem()
     const totalPodMem = checkMemory(podSpec.resource)
-    if((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
+    if ((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
       return true
     }
     return false

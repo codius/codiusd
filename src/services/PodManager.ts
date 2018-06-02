@@ -9,31 +9,27 @@ const log = createLogger('PodManager')
 
 const DEFAULT_INTERVAL = 5000
 
-
 export default class PodManager {
   private hyper: HyperClient
   private pods: PodDatabase
-  private memoryUsed: number
   private hyperClient: HyperClient
-
-  public checkPodMem (memory: number | void): number {
-    if(memory) {
-      return memory
-    }
-    return 0
-  }
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
     this.hyperClient = deps(HyperClient)
   }
+  public checkPodMem (memory: number | void): number {
+    if (memory) {
+      return memory
+    }
+    return 0
+  }
 
   start () {
     this.run()
       .catch(err => log.error(err))
   }
-
 
   async run () {
     // log.debug('monitoring for expired images')
@@ -48,8 +44,7 @@ export default class PodManager {
       await this.hyperClient.deletePod(pod)
       this.pods.deletePod(pod)
     }))
-    
-    
+
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
 

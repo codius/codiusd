@@ -95,8 +95,7 @@ export default class PodDatabase {
       `id=${info.id} ` +
       `running=${info.running} ` +
       `duration=${params.duration} ` +
-      `expiry=${info.expiry} ` + 
-      `memory=${info.memory} `)  
-      
+      `expiry=${info.expiry} ` +
+      `memory=${info.memory} `)
   }
 }

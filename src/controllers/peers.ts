@@ -8,7 +8,7 @@ import Config from '../services/Config'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
-  const ver = deps(Version) 
+  const ver = deps(Version)
   const podManager = deps(PodManager)
   const config = deps(Config)
 
@@ -17,7 +17,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       peers: peerDb.getPeers()
     }
   }
-  
+
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
   }
@@ -36,7 +36,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     path: '/peers',
     handler: getPeers
   })
-  
+
   server.route({
     method: 'GET',
     path: '/memory',

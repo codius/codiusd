@@ -3,7 +3,6 @@ import PeerDatabase from './PeerDatabase'
 import Identity from './Identity'
 import { sampleSize } from 'lodash'
 import axios from 'axios'
-import os = require('os')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerFinder')

@@ -33,7 +33,6 @@ export default class PeerDatabase {
 
   public async addPeers (peers: string[]) {
     const previousCount = this.peers.size
-    const memoryMap = {}
     for (const peer of peers) {
       if (peer === this.identity.getUri()) {
         continue
