@@ -16,20 +16,12 @@ export default class App {
 
   constructor (deps: Injector) {
     this.config = deps(Config)
+
+    if (!this.config.memdownPersist) this.makeRootDir()
+
     this.peerFinder = deps(PeerFinder)
     this.httpServer = deps(HttpServer)
     this.podManager = deps(PodManager)
-
-    // Create root directory if it doesn't exist
-    try {
-      if (!this.config.memdownPersist) {
-        mkdir(this.config.codiusRoot, 0o755)
-      }
-    } catch (err) {
-      if (err.code !== 'EEXIST') {
-        throw err
-      }
-    }
   }
 
   async start () {
@@ -37,5 +29,15 @@ export default class App {
     await this.httpServer.start()
     this.peerFinder.start()
     this.podManager.start()
+  }
+
+  private makeRootDir () {
+    try {
+      mkdir(this.config.codiusRoot, 0o755)
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        throw err
+      }
+    }
   }
 }
