@@ -4,6 +4,7 @@ import Config from './Config'
 import PodManager from './PodManager'
 import PeerFinder from './PeerFinder'
 import HttpServer from './HttpServer'
+import Money from './Money'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('App')
@@ -13,6 +14,7 @@ export default class App {
   private peerFinder: PeerFinder
   private httpServer: HttpServer
   private podManager: PodManager
+  private money: Money
 
   constructor (deps: Injector) {
     this.config = deps(Config)
@@ -22,10 +24,12 @@ export default class App {
     this.peerFinder = deps(PeerFinder)
     this.httpServer = deps(HttpServer)
     this.podManager = deps(PodManager)
+    this.money = deps(Money)
   }
 
   async start () {
     log.info('starting codiusd...')
+    await this.money.start()
     await this.httpServer.start()
     this.peerFinder.start()
     this.podManager.start()
