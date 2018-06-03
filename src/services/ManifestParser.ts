@@ -42,6 +42,11 @@ export class Manifest {
       resource: this.machineToResource(this.manifest['machine']),
       containers: this.manifest['containers']
         .map(this.processContainer.bind(this))
+        .concat([{
+          // TODO: reference image by hash
+          name: `${this.hash}_moneyd`,
+          image: 'coil/codius-moneyd'
+        }])
     }
   }
 
