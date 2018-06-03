@@ -45,7 +45,7 @@ export class Manifest {
         .concat([{
           // Adds interledger access to this pod, listening on 7768
           name: `${this.hash}_moneyd`,
-          image: 'coil/codius-moneyd@sha256:f13b177de7887eb792b8525dcd583ad85685d7f5f1905d00770a03e2e8555836'
+          image: 'docker.coil.com/codius-moneyd@sha256:529faea2e140da6c41482c0ed606e1f8540a2b9b797565cbbc3bf040a1af0d13'
         }])
     }
   }
