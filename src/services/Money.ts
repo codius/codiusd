@@ -46,8 +46,7 @@ export default class Money {
         },
         child: {
           relation: 'child',
-          // TODO: upgrade to mini accounts w/ balances
-          plugin: 'ilp-plugin-mini-accounts',
+          plugin: 'ilp-plugin-mini-balances',
           assetCode: info.assetCode,
           assetScale: info.assetScale,
           options: {
