@@ -1,6 +1,7 @@
 import { PodSpec } from '../schemas/PodSpec'
 import { Injector } from 'reduct'
 import Config from './Config'
+import Secret from './Secret'
 import ManifestHash from './ManifestHash'
 import { createHash } from 'crypto'
 import * as Boom from 'boom'
@@ -18,6 +19,7 @@ export interface Env {
 }
 
 export class Manifest {
+  private secret: Secret
   private config: Config
   private hash: string
   private manifest: object
@@ -31,6 +33,7 @@ export class Manifest {
 
   constructor (opts: ManifestOptions) {
     this.manifest = opts.manifest
+    this.secret = opts.deps(Secret)
     this.config = opts.deps(Config)
     this.hash = opts.deps(ManifestHash).hashManifest(this.manifest)
     this.privateManifest = opts.privateManifest
@@ -45,7 +48,8 @@ export class Manifest {
         .concat([{
           // Adds interledger access to this pod, listening on 7768
           name: `${this.hash}_moneyd`,
-          image: 'docker.coil.com/codius-moneyd@sha256:529faea2e140da6c41482c0ed606e1f8540a2b9b797565cbbc3bf040a1af0d13'
+          image: 'docker.coil.com/codius-moneyd@sha256:4c02fc168e6b4cfde90475ed3c3243de0bce4ca76b73753a92fb74bf5116deef',
+          envs: [{ env: 'CODIUS_SECRET', value: this.secret.hmac(this.hash) }]
         }])
     }
   }
