@@ -19,7 +19,9 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    return (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
+    return {
+      freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
+    }
   }
 
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {

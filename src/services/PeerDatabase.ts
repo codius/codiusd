@@ -38,7 +38,7 @@ export default class PeerDatabase {
         continue
       }
       const memory = await axios.get(peer + '/memory')
-      this.memoryMap.set(peer, memory.data.podMem / memory.data.totalMem)
+      this.memoryMap.set(peer, memory.data.freeMem)
 
       this.peers.add(peer)
     }

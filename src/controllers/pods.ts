@@ -3,6 +3,7 @@ import * as Boom from 'boom'
 import { URL } from 'url'
 import { Injector } from 'reduct'
 import { PodRequest } from '../schemas/PodRequest'
+import { PodSpec } from '../schemas/PodSpec'
 import Config from '../services/Config'
 import PodManager from '../services/PodManager'
 import { checkMemory } from '../util/podResourceCheck'
@@ -39,7 +40,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     return hostUrl.href
   }
 
-  function checkIfHostFull (podSpec: any) {
+  function checkIfHostFull (podSpec: PodSpec) {
     const totalMem = os.totalmem()
     const totalPodMem = checkMemory(podSpec.resource)
     if ((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
