@@ -41,7 +41,14 @@ export default class PodManager {
 
     await Promise.all(expired.map(async pod => {
       log.debug('cleaning up pod. id=' + pod)
-      await this.hyperClient.deletePod(pod)
+      try {
+        await this.hyperClient.deletePod(pod)
+      } catch (e) {
+        log.error('error cleaning up pod. ' +
+          `id=${pod} ` +
+          `error=${e.message}`)
+      }
+
       this.pods.deletePod(pod)
     }))
 
@@ -66,12 +73,12 @@ export default class PodManager {
         .then((info) => true)
         .catch(() => false)
       if (isRunning) {
-        this.pods.addDurationToPod(podSpec.id, duration)
+        await this.pods.addDurationToPod(podSpec.id, duration)
         return
       }
     }
 
-    this.pods.addPod({
+    await this.pods.addPod({
       id: podSpec.id,
       running: true,
       duration,
@@ -80,12 +87,12 @@ export default class PodManager {
 
     // TODO: validate regex on port arg incoming
     if (port && Number(port) > 0) {
-      this.pods.setPodPort(podSpec.id, port)
+      await this.pods.setPodPort(podSpec.id, port)
     }
 
     await this.hyperClient.runPod(podSpec)
 
     const ip = await this.hyper.getPodIP(podSpec.id)
-    this.pods.setPodIP(podSpec.id, ip)
+    await this.pods.setPodIP(podSpec.id, ip)
   }
 }
