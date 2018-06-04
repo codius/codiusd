@@ -49,13 +49,15 @@ export default class PodDatabase {
       .map(p => p.id)
   }
 
-  public addDurationToPod (id: string, duration: string): void {
+  public async addDurationToPod (id: string, duration: string) {
     const info = this.pods.get(id)
     if (!info) {
       throw new Error('no pod found with id. id=' + id)
     }
 
+    // TODO: be more economical with saving pods
     info.expiry = addDuration(duration, info.expiry)
+    await this.codiusdb.savePods(Array.from(this.pods.values()))
 
     log.debug('added duration to pod. ' +
       `id=${info.id} ` +
@@ -63,33 +65,35 @@ export default class PodDatabase {
       `expiry=${info.expiry}`)
   }
 
-  public setPodIP (id: string, ip: string): void {
+  public async setPodIP (id: string, ip: string) {
     const info = this.pods.get(id)
     if (!info) {
       throw new Error('no pod found with id. id=' + id)
     }
 
     info.ip = ip
+    await this.codiusdb.savePods(Array.from(this.pods.values()))
 
     log.debug('set pod ip. ' +
       `id=${id} ` +
       `ip=${ip}`)
   }
 
-  public setPodPort (id: string, port: string): void {
+  public async setPodPort (id: string, port: string) {
     const info = this.pods.get(id)
     if (!info) {
       throw new Error('no pod found with id. id=' + id)
     }
 
     info.port = Number(port)
+    await this.codiusdb.savePods(Array.from(this.pods.values()))
 
     log.debug('set pod port. ' +
       `id=${id} ` +
       `port=${port}`)
   }
 
-  public addPod (params: AddPodParams): void {
+  public async addPod (params: AddPodParams) {
     const info: PodInfo = {
       id: params.id,
       running: params.running,
@@ -98,6 +102,7 @@ export default class PodDatabase {
     }
 
     this.pods.set(info.id, info)
+    await this.codiusdb.savePods(Array.from(this.pods.values()))
 
     log.debug('added pod. ' +
       `id=${info.id} ` +
