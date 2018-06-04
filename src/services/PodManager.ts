@@ -3,7 +3,7 @@ import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
-
+import { checkMemory } from '../util/podResourceCheck'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodManager')
 
@@ -18,6 +18,12 @@ export default class PodManager {
     this.pods = deps(PodDatabase)
     this.hyper = deps(HyperClient)
     this.hyperClient = deps(HyperClient)
+  }
+  public checkPodMem (memory: number | void): number {
+    if (memory) {
+      return memory
+    }
+    return 0
   }
 
   start () {
@@ -42,6 +48,18 @@ export default class PodManager {
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
 
+  public getMemoryUsed () {
+    const runningPods = this.pods.getRunningPods()
+    let memory = 0
+    for (let i = 0; i < runningPods.length; i++) {
+      let pod = this.pods.getPod(runningPods[i])
+      if (pod) {
+        memory += this.checkPodMem(pod.memory)
+      }
+    }
+    return memory
+  }
+
   async startPod (podSpec: PodSpec, duration: string, port?: string) {
     if (this.pods.getPod(podSpec.id)) {
       const isRunning = await this.hyperClient.getPodInfo(podSpec.id)
@@ -56,7 +74,8 @@ export default class PodManager {
     this.pods.addPod({
       id: podSpec.id,
       running: true,
-      duration
+      duration,
+      memory: checkMemory(podSpec.resource)
     })
 
     // TODO: validate regex on port arg incoming

@@ -3,11 +3,13 @@ import * as Boom from 'boom'
 import { URL } from 'url'
 import { Injector } from 'reduct'
 import { PodRequest } from '../schemas/PodRequest'
+import { PodSpec } from '../schemas/PodSpec'
 import Config from '../services/Config'
 import PodManager from '../services/PodManager'
+import { checkMemory } from '../util/podResourceCheck'
 import PodDatabase from '../services/PodDatabase'
 import ManifestParser from '../services/ManifestParser'
-
+import os = require('os')
 const Enjoi = require('enjoi')
 const PodRequest = require('../schemas/PodRequest.json')
 
@@ -38,6 +40,15 @@ export default function (server: Hapi.Server, deps: Injector) {
     return hostUrl.href
   }
 
+  function checkIfHostFull (podSpec: PodSpec) {
+    const totalMem = os.totalmem()
+    const totalPodMem = checkMemory(podSpec.resource)
+    if ((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
+      return true
+    }
+    return false
+  }
+
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     const duration = request.query['duration'] || 3600
@@ -59,7 +70,10 @@ export default function (server: Hapi.Server, deps: Injector) {
       request.payload['private']
     )
 
-    log.debug('podSpec', podSpec)
+    // throw error if memory usage exceeds available memory
+    if (checkIfHostFull(podSpec)) {
+      throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
+    }
 
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])

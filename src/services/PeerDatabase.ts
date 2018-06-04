@@ -6,20 +6,22 @@ import { choices } from '../common/random'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerDatabase')
+import axios from 'axios'
 
 export default class PeerDatabase {
   private config: Config
   private identity: Identity
   private peers: Set<string> = new Set()
   private codiusdb: CodiusDB
-
+  private memoryMap: Map<string, number> = new Map()
   constructor (deps: Injector) {
     this.config = deps(Config)
     this.identity = deps(Identity)
     this.codiusdb = deps(CodiusDB)
-
     for (let peer of this.config.bootstrapPeers) {
-      this.peers.add(peer)
+      if (peer !== this.config.publicUri) {
+        this.peers.add(peer)
+      }
     }
 
     this.loadPeersFromDB().catch(err => log.error(err))
@@ -29,16 +31,17 @@ export default class PeerDatabase {
     return choices(Array.from(this.peers), numPeers)
   }
 
-  public addPeers (peers: string[]) {
+  public async addPeers (peers: string[]) {
     const previousCount = this.peers.size
     for (const peer of peers) {
       if (peer === this.identity.getUri()) {
         continue
       }
+      const memory = await axios.get(peer + '/memory')
+      this.memoryMap.set(peer, memory.data.freeMem)
 
       this.peers.add(peer)
     }
-
     if (this.peers.size > previousCount) {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
