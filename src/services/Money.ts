@@ -1,5 +1,7 @@
 import { Injector } from 'reduct'
 import { randomBytes } from 'crypto'
+import Config from './Config'
+import * as path from 'path'
 import * as ILDCP from 'ilp-protocol-ildcp'
 import spawn from '../util/spawn'
 
@@ -9,10 +11,12 @@ const makePlugin = require('ilp-plugin')
 const Connector = require('ilp-connector')
 
 export default class Money {
+  private config: Config
   private connector: any
   private port: number
 
   constructor (deps: Injector) {
+    this.config = deps(Config)
   }
 
   async start () {
@@ -29,11 +33,14 @@ export default class Money {
       ? JSON.parse(process.env.ILP_CREDENTIALS)
       : { server: `btp+ws://:${secret}@localhost:7768` }
 
+    // TODO: use the codiusDB if connector allows for it
+    const storePath = path.resolve(this.config.codiusRoot, 'connector.db')
+
     this.connector = Connector.createApp({
       spread: 0,
       backend: 'one-to-one',
-      // TODO: persist store using codiusDB's database
-      store: 'memdown',
+      store: 'leveldown',
+      storePath,
       initialConnectTimeout: 60000,
       env: prefixToEnv(info.clientAddress),
       accounts: {
