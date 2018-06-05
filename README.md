@@ -74,3 +74,16 @@ sudo npm install -g codiusd
 * [ ] publish @sharafian/cog and pull from actual npm
 * [ ] proxy endpoints based on manifest hash to the contract's IP
 * [x] persist peers between sessions
+
+###### hyperd doesn't start containers on restart
+
+See:
+
+  * <https://github.com/hyperhq/hyperd/issues/654>
+  * <https://github.com/hyperhq/hyperd/issues/715>
+
+The hyperd logs will have errors like:
+
+    E0605 ...   persist.go:100] Pod[...] failed to load inf info of : leveldb: not found
+
+As a temporary workaround, offending containers can be removed from `/var/lib/hyper/containers/`, which will allow them to be started again fresh.
