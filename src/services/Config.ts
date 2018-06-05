@@ -9,6 +9,8 @@ export default class Config {
   readonly memdownPersist: boolean
   readonly bootstrapPeers: string
   readonly maxMemoryFraction: number
+  readonly ilpPlugin: string | void
+  readonly ilpCredentials: string | void
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -16,6 +18,8 @@ export default class Config {
       env = process.env
     }
 
+    this.ilpPlugin = env.ILP_PLUGIN
+    this.ilpCredentials = env.ILP_CREDENTIALS
     this.hyperSock = env.CODIUS_HYPER_SOCKET || '/var/run/hyper.sock'
     this.noop = env.CODIUS_HYPER_NOOP === 'true'
     this.port = Number(env.CODIUS_PORT) || 3000

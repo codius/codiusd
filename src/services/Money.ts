@@ -28,9 +28,9 @@ export default class Money {
     // TODO: how many bytes to avoid collision on local machine
     // while not having a crazy long ILP address
     const secret = randomBytes(8).toString('hex')
-    const plugin = process.env.ILP_PLUGIN || 'ilp-plugin-btp'
-    const options = process.env.ILP_CREDENTIALS
-      ? JSON.parse(process.env.ILP_CREDENTIALS)
+    const plugin = this.config.ilpPlugin || 'ilp-plugin-btp'
+    const options = this.config.ilpCredentials 
+      ? JSON.parse(this.config.ilpCredentials)
       : { server: `btp+ws://:${secret}@localhost:7768` }
 
     // TODO: use the codiusDB if connector allows for it
