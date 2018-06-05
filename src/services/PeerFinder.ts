@@ -1,6 +1,7 @@
 import { Injector } from 'reduct'
 import PeerDatabase from './PeerDatabase'
 import Identity from './Identity'
+import Version from './Version'
 import { sampleSize } from 'lodash'
 import axios from 'axios'
 
@@ -13,10 +14,12 @@ const PEERS_PER_QUERY = 5
 export default class PeerFinder {
   private peerDb: PeerDatabase
   private identity: Identity
+  private version: Version
 
   constructor (deps: Injector) {
     this.peerDb = deps(PeerDatabase)
     this.identity = deps(Identity)
+    this.version = deps(Version)
   }
 
   start () {
@@ -34,6 +37,12 @@ export default class PeerFinder {
           const res = await axios.post(peer + '/peers/discover', {
             peers: [ this.identity.getUri() ]
           })
+
+          const [ major, minor ] = res.data.version.split('.')
+          if (this.version.major !== major || this.version.minor > minor) {
+            continue
+          }
+
           this.peerDb.addPeers(res.data.peers)
         }
       }
