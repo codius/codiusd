@@ -37,10 +37,21 @@ export default class PeerDatabase {
       if (peer === this.identity.getUri()) {
         continue
       }
-      const memory = await axios.get(peer + '/memory')
-      this.memoryMap.set(peer, memory.data.freeMem)
+           
+      try {
+        const validate = await axios.get(peer + '/validate-peer')
+        log.debug('validating', validate.data)
+        if (validate.data) {
+          const memory = await axios.get(peer + '/memory')
+          this.memoryMap.set(peer, memory.data.freeMem)
 
-      this.peers.add(peer)
+          this.peers.add(peer)
+        }
+      }
+      catch (e) {
+        log.error('e', e)
+      }
+
     }
     if (this.peers.size > previousCount) {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))

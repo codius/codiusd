@@ -23,7 +23,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
     }
   }
-
+  
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     peerDb.addPeers(request.payload['peers'])
     return {
@@ -33,6 +33,14 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
+  async function validatePeer (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const advertisedUrl = new URL(request.server.info.uri)
+    console.log('test', advertisedUrl.host, request.server.info.host)     
+    if (request.server.info.host !== advertisedUrl.host) {
+      return false
+    }
+    return true
+  }
   server.route({
     method: 'GET',
     path: '/peers',
@@ -43,6 +51,12 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'GET',
     path: '/memory',
     handler: getMemory
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/validate-peer',
+    handler: validatePeer
   })
 
   server.route({
