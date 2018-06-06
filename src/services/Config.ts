@@ -8,6 +8,7 @@ export default class Config {
   readonly hyperSock: string
   readonly noop: boolean
   readonly port: number
+  readonly bindIp: string
   readonly publicUri: string
   readonly codiusRoot: string
   readonly memdownPersist: boolean
