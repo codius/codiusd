@@ -96,6 +96,6 @@ sudo npm install -g codiusd
 * Default: `http://local.codius.org:CODIUS_PORT`
 
 #### CODIUS_BOOTSTRAP_PEERS
-* Type: JSON Object
+* Type: JSON Array
 * Description: List of peers whose values are the URIs that resolve to their Codius instance.
 * Default: [ ]
