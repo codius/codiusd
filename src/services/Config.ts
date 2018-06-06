@@ -11,6 +11,7 @@ export default class Config {
   readonly maxMemoryFraction: number
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
+  readonly devMode: boolean
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -26,6 +27,7 @@ export default class Config {
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://local.codius.org:' + this.port)
     this.codiusRoot = env.CODIUS_ROOT || '/var/lib/codius'
     this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
+    this.devMode = env.CODIUS_DEV === 'true'
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : []

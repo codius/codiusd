@@ -21,7 +21,7 @@ export default class App {
   constructor (deps: Injector) {
     this.config = deps(Config)
 
-    if (!this.config.memdownPersist) this.makeRootDir()
+    if (!this.config.memdownPersist && !this.config.devMode) this.makeRootDir()
 
     this.peerFinder = deps(PeerFinder)
     this.httpServer = deps(HttpServer)
