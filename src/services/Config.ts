@@ -1,5 +1,9 @@
 import { Injector } from 'reduct'
 
+const DEFAULT_BOOTSTRAP_PEERS = [
+  'https://codius.justmoon.com'
+]
+
 export default class Config {
   readonly hyperSock: string
   readonly noop: boolean
