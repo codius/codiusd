@@ -13,7 +13,6 @@ const Connector = require('ilp-connector')
 export default class Money {
   private config: Config
   private connector: any
-  private port: number
 
   constructor (deps: Injector) {
     this.config = deps(Config)
@@ -29,7 +28,7 @@ export default class Money {
     // while not having a crazy long ILP address
     const secret = randomBytes(8).toString('hex')
     const plugin = this.config.ilpPlugin || 'ilp-plugin-btp'
-    const options = this.config.ilpCredentials 
+    const options = this.config.ilpCredentials
       ? JSON.parse(this.config.ilpCredentials)
       : { server: `btp+ws://:${secret}@localhost:7768` }
 
