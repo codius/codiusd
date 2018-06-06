@@ -60,7 +60,7 @@ sudo npm install -g codiusd
 
 * [ ] Block network traffic between pods by default
 * [ ] Add plugin decorator to Hapi.Request type
-* [x] Figure out encoding to hash manifest 
+* [x] Figure out encoding to hash manifest
 * [ ] How to escape the variable interpolation in manifest parser
 * [x] How to fill in the values for private sha256 variables
 * [x] Switch hyperctl to hyper.sock http requests
@@ -74,3 +74,8 @@ sudo npm install -g codiusd
 * [ ] publish @sharafian/cog and pull from actual npm
 * [ ] proxy endpoints based on manifest hash to the contract's IP
 * [x] persist peers between sessions
+
+
+## License
+
+Apache-2.0
