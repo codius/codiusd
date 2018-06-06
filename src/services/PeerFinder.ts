@@ -34,7 +34,6 @@ export default class PeerFinder {
           const res = await axios.post(peer + '/peers/discover', {
             peers: [ this.identity.getUri() ]
           })
-          console.log('add more peers', res.data)
           this.peerDb.addPeers(res.data.peers)
         }
       }

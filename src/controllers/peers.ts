@@ -36,8 +36,6 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function validatePeer (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const advertisedUrl = url.parse(request.server.info.uri)
-    console.log("anything here?")
-    console.log('test', advertisedUrl.host, request.server.info.host)
     if (request.server.info.host !== advertisedUrl.host) {
       return false
     }
