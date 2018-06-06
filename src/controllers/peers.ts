@@ -5,6 +5,7 @@ import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
 import * as os from 'os'
 import Config from '../services/Config'
+import * as url from 'url'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
@@ -33,6 +34,13 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
+  async function validatePeer (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const advertisedUrl = url.parse(request.server.info.uri)
+    if (request.server.info.host !== advertisedUrl.host) {
+      return false
+    }
+    return true
+  }
   server.route({
     method: 'GET',
     path: '/peers',
@@ -43,6 +51,12 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'GET',
     path: '/memory',
     handler: getMemory
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/validate-peer',
+    handler: validatePeer
   })
 
   server.route({
