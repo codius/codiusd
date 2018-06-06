@@ -1,7 +1,8 @@
 import { Injector } from 'reduct'
 
 const DEFAULT_BOOTSTRAP_PEERS = [
-  'https://codius.justmoon.com'
+  'https://codius.justmoon.com',
+  'https://codius.andros-connector.com'
 ]
 
 export default class Config {
