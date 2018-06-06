@@ -18,7 +18,7 @@ export default class HttpServer {
     this.config = deps(Config)
     this.server = new Hapi.Server({
       uri: this.config.publicUri,
-      address: '0.0.0.0',
+      address: this.config.bindIp,
       port: this.config.port
     })
 
