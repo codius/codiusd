@@ -35,6 +35,7 @@ export default class PeerFinder {
             peers: [ this.identity.getUri() ]
           })
           this.peerDb.addPeers(res.data.peers)
+            .catch(err => log.error(err))
         }
       }
     } catch (err) {

@@ -37,7 +37,7 @@ export default class Config {
     this.devMode = env.CODIUS_DEV === 'true'
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
-      : []
+      : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
   }
 }

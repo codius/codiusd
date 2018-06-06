@@ -24,6 +24,7 @@ export default class PodDatabase {
   constructor (deps: Injector) {
     this.codiusdb = deps(CodiusDB)
     this.loadPodsFromDB()
+      .catch(err => log.error(err))
   }
 
   public getPod (id: string): PodInfo | void {
