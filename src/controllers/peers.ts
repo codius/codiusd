@@ -5,6 +5,7 @@ import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
 import * as os from 'os'
 import Config from '../services/Config'
+import * as url from 'url'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
@@ -23,7 +24,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
     }
   }
-  
+
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     peerDb.addPeers(request.payload['peers'])
     return {
@@ -34,8 +35,9 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function validatePeer (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const advertisedUrl = new URL(request.server.info.uri)
-    console.log('test', advertisedUrl.host, request.server.info.host)     
+    const advertisedUrl = url.parse(request.server.info.uri)
+    console.log("anything here?")
+    console.log('test', advertisedUrl.host, request.server.info.host)
     if (request.server.info.host !== advertisedUrl.host) {
       return false
     }

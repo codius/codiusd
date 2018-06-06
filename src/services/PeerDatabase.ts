@@ -37,18 +37,17 @@ export default class PeerDatabase {
       if (peer === this.identity.getUri()) {
         continue
       }
-           
       try {
         const validate = await axios.get(peer + '/validate-peer')
         log.debug('validating', validate.data)
+        log.debug('IS IT GETTIG IN')
         if (validate.data) {
           const memory = await axios.get(peer + '/memory')
           this.memoryMap.set(peer, memory.data.freeMem)
 
           this.peers.add(peer)
         }
-      }
-      catch (e) {
+      } catch (e) {
         log.error('e', e)
       }
 
