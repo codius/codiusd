@@ -28,7 +28,7 @@ export default class Config {
     this.ilpPlugin = env.ILP_PLUGIN
     this.ilpCredentials = env.ILP_CREDENTIALS
     this.hyperSock = env.CODIUS_HYPER_SOCKET || '/var/run/hyper.sock'
-    this.noop = env.CODIUS_HYPER_NOOP === 'true'
+    this.noop = env.CODIUS_HYPER_NOOP === 'true' 
     this.port = Number(env.CODIUS_PORT) || 3000
     this.bindIp = env.CODIUS_BIND_IP || '127.0.0.1'
     this.publicUri = env.CODIUS_PUBLIC_URI || ('http://local.codius.org:' + this.port)
