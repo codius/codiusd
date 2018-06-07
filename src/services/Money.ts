@@ -13,7 +13,6 @@ const Connector = require('ilp-connector')
 export default class Money {
   private config: Config
   private connector: any
-  private port: number
 
   constructor (deps: Injector) {
     this.config = deps(Config)

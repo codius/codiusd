@@ -1,6 +1,6 @@
 {
   "name": "codiusd",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Codius Host Software",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -16,7 +16,7 @@
     "compile-ts": "tsc --project .",
     "lint": "tslint --project .",
     "pretest": "npm run build",
-    "test": "nyc mocha",
+    "test": "npm run lint && nyc mocha",
     "watch": "mocha-typescript-watch",
     "prepare": "npm run build",
     "start": "node src/index.js"
@@ -67,7 +67,6 @@
     "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
     "@types/boom": "^7.2.0",
     "@types/chai": "^4.1.3",
     "@types/chai-as-promised": "^7.1.0",
@@ -93,7 +92,7 @@
     "typescript": "^2.8.3"
   },
   "nyc": {
-    "check-coverage": true,
+    "check-coverage": false,
     "lines": 80,
     "statements": 80,
     "functions": 80,
