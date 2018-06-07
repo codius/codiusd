@@ -2,8 +2,7 @@ import { Injector } from 'reduct'
 
 const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.justmoon.com',
-  'https://codius.andros-connector.com',
-  'https://codius.feraltc.com'
+  'https://codius.andros-connector.com'
 ]
 
 export default class Config {
@@ -19,7 +18,6 @@ export default class Config {
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
   readonly devMode: boolean
-  readonly peerIgnoreList: string[]
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
