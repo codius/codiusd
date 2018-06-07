@@ -18,7 +18,7 @@ export default class CodiusDB {
     this.config = deps(Config)
 
     let backend
-    if (this.config.memdownPersist) {
+    if (this.config.memdownPersist || this.config.devMode) {
       backend = memdown()
     } else {
       backend = leveldown(resolvePath(this.config.codiusRoot, 'codius.db'))

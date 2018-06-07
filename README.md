@@ -60,7 +60,7 @@ sudo npm install -g codiusd
 
 * [ ] Block network traffic between pods by default
 * [ ] Add plugin decorator to Hapi.Request type
-* [x] Figure out encoding to hash manifest 
+* [x] Figure out encoding to hash manifest
 * [ ] How to escape the variable interpolation in manifest parser
 * [x] How to fill in the values for private sha256 variables
 * [x] Switch hyperctl to hyper.sock http requests
@@ -87,3 +87,7 @@ The hyperd logs will have errors like:
     E0605 ...   persist.go:100] Pod[...] failed to load inf info of : leveldb: not found
 
 As a temporary workaround, offending containers can be removed from `/var/lib/hyper/containers/`, which will allow them to be started again fresh.
+
+## License
+
+Apache-2.0
