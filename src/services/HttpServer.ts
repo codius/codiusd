@@ -17,7 +17,7 @@ export default class HttpServer {
   constructor (deps: Injector) {
     this.config = deps(Config)
     this.server = new Hapi.Server({
-      uri: this.config.publicUri.replace(/\/+$/, ""),
+      uri: this.config.publicUri.replace(/\/+$/, ''),
       address: this.config.bindIp,
       port: this.config.port
     })
