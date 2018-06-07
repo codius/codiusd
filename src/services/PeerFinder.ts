@@ -35,7 +35,6 @@ export default class PeerFinder {
         this.peerDb.addPeers(res.data.peers)
           .catch(err => log.error(err))
       } catch (err) {
-        // TODO: Should we remove the peer from the DB if the peers/discover fails.
         this.peerDb.removePeer(peer).catch(err => log.error(err))
         log.error(err)
       }
