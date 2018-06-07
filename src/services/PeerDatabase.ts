@@ -2,6 +2,7 @@ import { Injector } from 'reduct'
 import Config from './Config'
 import Identity from './Identity'
 import CodiusDB from '../util/CodiusDB'
+import { validatePeer } from '../util/validatePeer'
 import { choices } from '../common/random'
 
 import { create as createLogger } from '../common/log'
@@ -19,8 +20,8 @@ export default class PeerDatabase {
     this.identity = deps(Identity)
     this.codiusdb = deps(CodiusDB)
     for (let peer of this.config.bootstrapPeers) {
-      if (peer !== this.config.publicUri) {
-        this.peers.add(peer)
+      if (peer !== this.config.publicUri && validatePeer(peer)) {
+        this.peers.add(peer)        
       }
     }
 
@@ -37,17 +38,20 @@ export default class PeerDatabase {
       if (peer === this.identity.getUri()) {
         continue
       }
-      try {
-        const validate = await axios.get(peer + '/validate-peer')
-        log.debug('validating', validate.data)
-        if (validate.data) {
+      try { 
+        // Check for invalid peer addresses
+        if (validatePeer(peer)) {
           const memory = await axios.get(peer + '/memory')
-          this.memoryMap.set(peer, memory.data.freeMem)
-
+          if (memory) {
+            this.memoryMap.set(peer, memory.data.freeMem)
+          }
+          
           this.peers.add(peer)
-        }
+        }      
+        
       } catch (e) {
-        log.error('e', e.response.data)
+        
+        log.error('Error code %s at %s', e.errno, peer )
       }
 
     }
@@ -61,7 +65,17 @@ export default class PeerDatabase {
     const peersFromDB = await this.codiusdb.getPeers()
     log.debug(`Loading ${peersFromDB.length} peers from db...`)
     for (let peer of peersFromDB) {
-      this.peers.add(peer)
+      if (validatePeer(peer)) {
+        this.peers.add(peer)
+      } else {
+        this.removePeer(peer)
+      }
     }
+  }
+  
+  public async removePeer (peer: string) {
+    this.peers.delete(peer)
+    this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
+    log.debug('removed peer %s, now %s peers', peer, this.peers.size) 
   }
 }

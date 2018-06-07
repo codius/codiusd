@@ -19,6 +19,7 @@ export default class Config {
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
   readonly devMode: boolean
+  readonly peerIgnoreList: string[]
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -40,5 +41,6 @@ export default class Config {
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
+    
   }
 }

@@ -3,7 +3,7 @@ import PeerDatabase from './PeerDatabase'
 import Identity from './Identity'
 import { sampleSize } from 'lodash'
 import axios from 'axios'
-
+import { validatePeer } from '../util/validatePeer'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PeerFinder')
 
@@ -37,6 +37,7 @@ export default class PeerFinder {
           .catch(err => log.error(err))
       } catch (err) {
         // TODO: Should we remove the peer from the DB if the peers/discover fails.
+        this.peerDb.removePeer(peer)
         log.error(err)
       }
     }
