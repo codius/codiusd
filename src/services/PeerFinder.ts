@@ -26,20 +26,19 @@ export default class PeerFinder {
 
   async run () {
     log.debug('searching peers')
-    try {
-      const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
-      log.debug('peers', queryPeers)
-      for (const peer of queryPeers) {
-        {
-          const res = await axios.post(peer + '/peers/discover', {
-            peers: [ this.identity.getUri() ]
-          })
-          this.peerDb.addPeers(res.data.peers)
-            .catch(err => log.error(err))
-        }
+    const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
+    log.debug('peers', queryPeers)
+    for (const peer of queryPeers) {
+      try {
+        const res = await axios.post(peer + '/peers/discover', {
+          peers: [ this.identity.getUri() ]
+        })
+        this.peerDb.addPeers(res.data.peers)
+          .catch(err => log.error(err))
+      } catch (err) {
+        // TODO: Should we remove the peer from the DB if the peers/discover fails.
+        log.error(err)
       }
-    } catch (err) {
-      log.error(err)
     }
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
   }
