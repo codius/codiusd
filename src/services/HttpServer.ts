@@ -30,7 +30,9 @@ export default class HttpServer {
 
   async start () {
     await this.server.register({ plugin: require('h2o2') })
-    await this.server.register(HapiCog)
+    if (!this.config.devMode) {
+      await this.server.register(HapiCog)
+    }
     await this.server.start()
 
     log.info('listening at %s', this.server.info.uri)
