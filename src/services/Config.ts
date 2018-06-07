@@ -41,6 +41,5 @@ export default class Config {
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
-    
   }
 }

@@ -21,7 +21,7 @@ export default class PeerDatabase {
     this.codiusdb = deps(CodiusDB)
     for (let peer of this.config.bootstrapPeers) {
       if (peer !== this.config.publicUri && validatePeer(peer)) {
-        this.peers.add(peer)        
+        this.peers.add(peer)
       }
     }
 
@@ -38,20 +38,20 @@ export default class PeerDatabase {
       if (peer === this.identity.getUri()) {
         continue
       }
-      try { 
+      try {
         // Check for invalid peer addresses
         if (validatePeer(peer)) {
           const memory = await axios.get(peer + '/memory')
           if (memory) {
             this.memoryMap.set(peer, memory.data.freeMem)
           }
-          
+
           this.peers.add(peer)
-        }      
-        
+        }
+
       } catch (e) {
-        
-        log.error('Error code %s at %s', e.errno, peer )
+
+        log.error('Error code %s at %s', e.errno, peer)
       }
 
     }
@@ -59,6 +59,11 @@ export default class PeerDatabase {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
+  }
+  public async removePeer (peer: string) {
+    this.peers.delete(peer)
+    this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
+    log.debug('removed peer %s, now %s peers', peer, this.peers.size)
   }
 
   private async loadPeersFromDB () {
@@ -68,14 +73,8 @@ export default class PeerDatabase {
       if (validatePeer(peer)) {
         this.peers.add(peer)
       } else {
-        this.removePeer(peer)
+        this.removePeer(peer).catch(err => log.error(err))
       }
     }
-  }
-  
-  public async removePeer (peer: string) {
-    this.peers.delete(peer)
-    this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
-    log.debug('removed peer %s, now %s peers', peer, this.peers.size) 
   }
 }
