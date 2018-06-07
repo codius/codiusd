@@ -5,7 +5,6 @@ import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
 import * as os from 'os'
 import Config from '../services/Config'
-import * as url from 'url'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
