@@ -14,13 +14,15 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
-      peers: peerDb.getPeers()
+      peers: peerDb.getPeers(),
+      version: ver.getVersion()
     }
   }
 
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
-      freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
+      freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed(),
+      version: ver.getVersion()
     }
   }
 
