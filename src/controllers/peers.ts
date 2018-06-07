@@ -34,13 +34,6 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
-  async function validatePeer (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const advertisedUrl = url.parse(request.server.info.uri)
-    if (request.server.info.host !== advertisedUrl.host) {
-      return false
-    }
-    return true
-  }
   server.route({
     method: 'GET',
     path: '/peers',
@@ -51,12 +44,6 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'GET',
     path: '/memory',
     handler: getMemory
-  })
-
-  server.route({
-    method: 'GET',
-    path: '/validate-peer',
-    handler: validatePeer
   })
 
   server.route({
