@@ -32,8 +32,10 @@ export default class App {
 
   async start () {
     log.info('starting codiusd...')
-    await this.secret.load()
-    await this.money.start()
+    if (!this.config.devMode) {
+      await this.secret.load()
+      await this.money.start()
+    }
     await this.httpServer.start()
     this.peerFinder.start()
     this.podManager.start()
