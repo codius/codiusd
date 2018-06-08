@@ -9,6 +9,14 @@ const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.tinypolarbear.com'
 ]
 
+function getBootstrapPeers (devMode: boolean, bootstrapPeers: string | undefined): string[] {
+  if (devMode) {
+    // Do not connect to bootstrap nodes if devMode is switched on
+    return []
+  }
+  return (bootstrapPeers ? JSON.parse(bootstrapPeers) : DEFAULT_BOOTSTRAP_PEERS)
+}
+
 export default class Config {
   readonly hyperSock: string
   readonly noop: boolean
@@ -17,12 +25,16 @@ export default class Config {
   readonly publicUri: string
   readonly codiusRoot: string
   readonly memdownPersist: boolean
-  readonly bootstrapPeers: string
+  readonly bootstrapPeers: string[]
   readonly maxMemoryFraction: number
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
   readonly devMode: boolean
-
+  readonly showAdditionalHostInfo: boolean
+  readonly hostCurrency: string
+  readonly hostAssetScale: number
+  readonly hostCostPerMonth: number
+  readonly timeZone: string
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
     if (typeof env === 'function') {
@@ -39,9 +51,12 @@ export default class Config {
     this.codiusRoot = env.CODIUS_ROOT || '/var/lib/codius'
     this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
     this.devMode = env.CODIUS_DEV === 'true'
-    this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
-      ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
-      : DEFAULT_BOOTSTRAP_PEERS
+    this.bootstrapPeers = getBootstrapPeers(this.devMode, env.CODIUS_BOOTSTRAP_PEERS)
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
+    this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
+    this.hostCurrency = 'XRP'
+    this.hostAssetScale = 1e6
+    this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
+    this.timeZone = env.CODIUS_TIME_ZONE || 'America/Los_Angeles'
   }
 }

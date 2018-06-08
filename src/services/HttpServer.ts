@@ -3,6 +3,7 @@ import registerVersionController from '../controllers/version'
 import registerPeersController from '../controllers/peers'
 import registerPodsController from '../controllers/pods'
 import registerProxyController from '../controllers/proxy'
+import registerInfoController from '../controllers/info'
 import { Injector } from 'reduct'
 import Config from './Config'
 const { HapiCog } = require('@sharafian/cog')
@@ -26,6 +27,7 @@ export default class HttpServer {
     registerPeersController(this.server, deps)
     registerPodsController(this.server, deps)
     registerProxyController(this.server, deps)
+    registerInfoController(this.server, deps)
   }
 
   async start () {
@@ -40,5 +42,12 @@ export default class HttpServer {
 
   getUrl () {
     return this.server.info.uri
+  }
+
+  getServer () {
+    if (process.env.NODE_ENV === 'test') {
+      return this.server
+    }
+    return null
   }
 }

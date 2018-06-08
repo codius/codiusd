@@ -2,6 +2,7 @@ import { Injector } from 'reduct'
 import Config from './Config'
 import Identity from './Identity'
 import CodiusDB from '../util/CodiusDB'
+import { shallowValidatePeer } from '../util/validatePeer'
 import { choices } from '../common/random'
 
 import { create as createLogger } from '../common/log'
@@ -19,7 +20,7 @@ export default class PeerDatabase {
     this.identity = deps(Identity)
     this.codiusdb = deps(CodiusDB)
     for (let peer of this.config.bootstrapPeers) {
-      if (peer !== this.config.publicUri) {
+      if (peer !== this.config.publicUri && shallowValidatePeer(peer) && process.env.NODE_ENV !== 'test') {
         this.peers.add(peer)
       }
     }
@@ -31,28 +32,67 @@ export default class PeerDatabase {
     return choices(Array.from(this.peers), numPeers)
   }
 
+  public async getFreePeers () {
+    const peersFromDB = await this.codiusdb.getPeers()
+    const freePeers = peersFromDB.filter(peer => {
+      const peerFreeMem = this.memoryMap.get(peer)
+      if (peerFreeMem) {
+        return peer
+      }
+    })
+    return freePeers
+  }
   public async addPeers (peers: string[]) {
     const previousCount = this.peers.size
     for (const peer of peers) {
       if (peer === this.identity.getUri()) {
         continue
       }
-      const memory = await axios.get(peer + '/memory')
-      this.memoryMap.set(peer, memory.data.freeMem)
+      try {
+        // Check for invalid peer addresses. Validate peer only if not in set.
+        if (!this.peers.has(peer)) {
+          const peerInfo = await axios.get(peer + '/host-info')
+          if (peer === peerInfo.data.uri && shallowValidatePeer(peer)) {
+            this.memoryMap.set(peer, peerInfo.data.fullMem)
+            this.peers.add(peer)
+          }
+        }
 
-      this.peers.add(peer)
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'test') {
+	  log.error('Error code %s at %s', e, peer)
+        }
+      }
+
     }
-    if (this.peers.size > previousCount) {
+    if (this.peers.size > previousCount && process.env.NODE_ENV !== 'test') {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
+  }
+  public removePeer (peer: string) {
+    this.peers.delete(peer)
+    this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
+    log.debug('removed peer %s, now %s peers', peer, this.peers.size)
+  }
+
+  public getNumPeers () {
+    return this.peers.size
+  }
+
+  public getAllPeers () {
+    return [...this.peers]
   }
 
   private async loadPeersFromDB () {
     const peersFromDB = await this.codiusdb.getPeers()
     log.debug(`Loading ${peersFromDB.length} peers from db...`)
     for (let peer of peersFromDB) {
-      this.peers.add(peer)
+      if (shallowValidatePeer(peer)) {
+        this.peers.add(peer)
+      } else {
+        this.removePeer(peer)
+      }
     }
   }
 }
