@@ -75,6 +75,12 @@ sudo npm install -g codiusd
 * [ ] proxy endpoints based on manifest hash to the contract's IP
 
 ### Environment Variables
+
+#### CODIUS_XRP_PER_MONTH
+* Type: Integer
+* Description: A monhtly rate the host charges (in XRP) to host a program. `Codiusd` calculates this value down to the rate per second, as uploads are given a time in seconds to be hosted for.
+* Default: 10
+
 #### CODIUS_HYPER_SOCKET
 * Type: String
 * Description: The absolute path to the `hyperd` socket.
