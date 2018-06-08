@@ -60,7 +60,7 @@ export default class PeerDatabase {
       log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
   }
-  public async removePeer (peer: string) {
+  public removePeer (peer: string) {
     this.peers.delete(peer)
     this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
     log.debug('removed peer %s, now %s peers', peer, this.peers.size)
@@ -73,7 +73,7 @@ export default class PeerDatabase {
       if (validatePeer(peer)) {
         this.peers.add(peer)
       } else {
-        this.removePeer(peer).catch(err => log.error(err))
+        this.removePeer(peer)
       }
     }
   }
