@@ -15,6 +15,9 @@
     },
     "ip": {
       "type": "string"
+    },
+    "memory": {
+      "type": "number"
     }
   },
   "required": [ "id", "running", "expiry" ],

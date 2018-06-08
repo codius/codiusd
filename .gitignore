@@ -10,3 +10,5 @@
 /test/**/*.d.ts
 #/src/schemas/*.ts
 !wallaby.js
+/parallel-2018522*
+/secret

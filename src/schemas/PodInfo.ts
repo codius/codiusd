@@ -10,4 +10,5 @@ export interface PodInfo {
   expiry: string;
   port?: number;
   ip?: string;
+  memory?: number;
 }

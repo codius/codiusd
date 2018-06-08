@@ -1,7 +1,7 @@
 import { PodSpec } from '../schemas/PodSpec'
-import { ContainerSpec } from '../schemas/ContainerSpec'
 import { Injector } from 'reduct'
 import Config from './Config'
+import Secret from './Secret'
 import ManifestHash from './ManifestHash'
 import { createHash } from 'crypto'
 import * as Boom from 'boom'
@@ -19,7 +19,7 @@ export interface Env {
 }
 
 export class Manifest {
-  private deps: Injector
+  private secret: Secret
   private config: Config
   private hash: string
   private manifest: object
@@ -33,6 +33,7 @@ export class Manifest {
 
   constructor (opts: ManifestOptions) {
     this.manifest = opts.manifest
+    this.secret = opts.deps(Secret)
     this.config = opts.deps(Config)
     this.hash = opts.deps(ManifestHash).hashManifest(this.manifest)
     this.privateManifest = opts.privateManifest
@@ -43,7 +44,13 @@ export class Manifest {
       id: this.hash,
       resource: this.machineToResource(this.manifest['machine']),
       containers: this.manifest['containers']
-        .map(this.processContainer.bind(this)),
+        .map(this.processContainer.bind(this))
+        .concat([{
+          // Adds interledger access to this pod, listening on 7768
+          name: `${this.hash}_moneyd`,
+          image: 'docker.coil.com/codius-moneyd@sha256:4c02fc168e6b4cfde90475ed3c3243de0bce4ca76b73753a92fb74bf5116deef',
+          envs: [{ env: 'CODIUS_SECRET', value: this.secret.hmac(this.hash) }]
+        }])
     }
   }
 
@@ -126,10 +133,10 @@ export class Manifest {
         .digest('hex')
 
       if (hashPrivateVar !== varSpec.value) {
-        throw Boom.badData('private var does not match hash. ' + 
+        throw Boom.badData('private var does not match hash. ' +
           `var=${value} ` +
           `encoding=${varSpec.encoding} ` +
-          `public-hash=${varSpec.value} ` + 
+          `public-hash=${varSpec.value} ` +
           `hashed-value=${hashPrivateVar}`)
       }
 

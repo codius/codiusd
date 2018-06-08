@@ -55,25 +55,6 @@ Once hyperd is installed and working, you can install Codius Host.
 ```sh
 sudo npm install -g codiusd
 ```
-
-##### Open Issues
-
-* [ ] Block network traffic between pods by default
-* [ ] Add plugin decorator to Hapi.Request type
-* [x] Figure out encoding to hash manifest 
-* [ ] How to escape the variable interpolation in manifest parser
-* [x] How to fill in the values for private sha256 variables
-* [x] Switch hyperctl to hyper.sock http requests
-* [ ] Check whether hyper instance is still running before adding duration
-* [ ] How do pods spend money?
-* [ ] add port field
-* [x] add private field to manifest's parent object
-* [x] add nonce to the private field spec
-* [ ] port blocking on dangerous ports
-* [x] change manifest hash encoding to base32
-* [ ] publish @sharafian/cog and pull from actual npm
-* [ ] proxy endpoints based on manifest hash to the contract's IP
-
 ### Environment Variables
 
 #### CODIUS_XRP_PER_MONTH
@@ -105,3 +86,39 @@ sudo npm install -g codiusd
 * Type: JSON Array
 * Description: List of peers whose values are the URIs that resolve to their Codius instance.
 * Default: [ ]
+
+##### Open Issues
+
+* [ ] Block network traffic between pods by default
+* [ ] Add plugin decorator to Hapi.Request type
+* [x] Figure out encoding to hash manifest
+* [ ] How to escape the variable interpolation in manifest parser
+* [x] How to fill in the values for private sha256 variables
+* [x] Switch hyperctl to hyper.sock http requests
+* [ ] Check whether hyper instance is still running before adding duration
+* [ ] How do pods spend money?
+* [ ] add port field
+* [x] add private field to manifest's parent object
+* [x] add nonce to the private field spec
+* [ ] port blocking on dangerous ports
+* [x] change manifest hash encoding to base32
+* [ ] publish @sharafian/cog and pull from actual npm
+* [ ] proxy endpoints based on manifest hash to the contract's IP
+* [x] persist peers between sessions
+
+###### hyperd doesn't start containers on restart
+
+See:
+
+  * <https://github.com/hyperhq/hyperd/issues/654>
+  * <https://github.com/hyperhq/hyperd/issues/715>
+
+The hyperd logs will have errors like:
+
+    E0605 ...   persist.go:100] Pod[...] failed to load inf info of : leveldb: not found
+
+As a temporary workaround, offending containers can be removed from `/var/lib/hyper/containers/`, which will allow them to be started again fresh.
+
+## License
+
+Apache-2.0

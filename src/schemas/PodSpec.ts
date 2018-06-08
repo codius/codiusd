@@ -10,9 +10,9 @@ export interface PodSpec {
     vcpu?: number;
     memory?: number;
   };
-  containers?: {
+  containers: {
     name?: string;
-    image?: string;
+    image: string;
     command?: string[];
     workdir?: string;
     environment?: {

@@ -17,8 +17,8 @@ export default class HttpServer {
   constructor (deps: Injector) {
     this.config = deps(Config)
     this.server = new Hapi.Server({
-      uri: this.config.publicUri,
-      address: '0.0.0.0',
+      uri: this.config.publicUri.replace(/\/+$/, ''),
+      address: this.config.bindIp,
       port: this.config.port
     })
 
@@ -30,7 +30,9 @@ export default class HttpServer {
 
   async start () {
     await this.server.register({ plugin: require('h2o2') })
-    await this.server.register(HapiCog)
+    if (!this.config.devMode) {
+      await this.server.register(HapiCog)
+    }
     await this.server.start()
 
     log.info('listening at %s', this.server.info.uri)
