@@ -5,7 +5,7 @@ export function validatePeer (peer: string): boolean {
   let hostName = url.parse(peer)
   hostName = hostName.hostname
 
-  if (hostName && hostName.slice(0.3) === '127' || IGNORE_LIST.indexOf(hostName) > -1) {
+  if (hostName && hostName.slice(0,3) === '127' || IGNORE_LIST.indexOf(hostName) > -1) {
     return false
   }
 
