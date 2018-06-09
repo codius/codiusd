@@ -55,6 +55,37 @@ Once hyperd is installed and working, you can install Codius Host.
 ```sh
 sudo npm install -g codiusd
 ```
+### Environment Variables
+
+#### CODIUS_XRP_PER_MONTH
+* Type: Integer
+* Description: A monhtly rate the host charges (in XRP) to host a program. `Codiusd` calculates this value down to the rate per second, as uploads are given a time in seconds to be hosted for.
+* Default: 10
+
+#### CODIUS_HYPER_SOCKET
+* Type: String
+* Description: The absolute path to the `hyperd` socket.
+* Default: `/var/run/hyper.sock`
+
+#### CODIUS_HYPER_NOOP
+* Type: Boolean
+* Description: Noops all `hyperd` API calls.
+* Default: false
+
+#### CODIUS_PORT
+* Type: [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)
+* Description: The port that codiusd will listen on.
+* Default: 3000
+
+#### CODIUS_PUBLIC_URI
+* Type: String
+* Description: The public URI resolving to this instance of codiusd.
+* Default: `http://local.codius.org:CODIUS_PORT`
+
+#### CODIUS_BOOTSTRAP_PEERS
+* Type: JSON Array
+* Description: List of peers whose values are the URIs that resolve to their Codius instance.
+* Default: [ ]
 
 ##### Open Issues
 
