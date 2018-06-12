@@ -51,7 +51,7 @@ export default class PeerDatabase {
       try {
         // Check for invalid peer addresses. Validate peer only if not in set.
         if (!this.peers.has(peer)) {
-          const peerInfo = await axios.get(peer + '/host-info')
+          const peerInfo = await axios.get(peer + '/info')
           if (peer === peerInfo.data.uri && shallowValidatePeer(peer)) {
             this.memoryMap.set(peer, peerInfo.data.fullMem)
             this.peers.add(peer)

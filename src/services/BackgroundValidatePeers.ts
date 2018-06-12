@@ -1,45 +1,40 @@
 import { Injector } from 'reduct'
 import PeerDatabase from './PeerDatabase'
-import Config from './Config'
 import axios from 'axios'
 import { create as createLogger } from '../common/log'
 import { shallowValidatePeer } from '../util/validatePeer'
 const log = createLogger('BackgroundValidatePeers')
-const CronJob = require('cron').CronJob
+const hoursInDay = 1000 * 60 * 60 * 24
 
 export default class BackgroundValidatePeers {
   private peerDb: PeerDatabase
-  private config: Config
   constructor (deps: Injector) {
     this.peerDb = deps(PeerDatabase)
-    this.config = deps(Config)
   }
 
   start () {
+    setTimeout(this.randomRunningCheck, hoursInDay)
+  }
+
+  private randomRunningCheck () {
     const db = this.peerDb
-    const config = this.config
-    const job = new CronJob({
-      cronTime: '00 30 2 * * *',
-      onTick: function () {
-        /*
-        * Runs every day at 2:30:00 AM.
-        */
-        log.debug('Validating Peers...')
-        const peers = db.getAllPeers()
-        peers.forEach(async (peer: string) => {
-          try {
-            const peerInfo = await axios.get(peer + '/host-info')
-            if (peer !== peerInfo.data.uri || !shallowValidatePeer(peer)) {
-              db.removePeer(peer)
-            }
-          } catch (err) {
-            log.error(err)
-          }
-        })
-      },
-      start: false,
-      timeZone: config.timeZone
+    const peers = db.getAllPeers()
+    peers.forEach(async (peer: string) => {
+      try {
+        const peerInfo = await axios.get(peer + '/info')
+        if (peer !== peerInfo.data.uri || !shallowValidatePeer(peer)) {
+          db.removePeer(peer)
+        }
+      } catch (err) {
+        log.error(err)
+      }
     })
-    job.start()
+    const addOrSubtract = Math.random()
+    const changeInTime = Math.random() * 1000 * 60 * 30
+    if (addOrSubtract > 0.5) {
+      setTimeout(this.randomRunningCheck, hoursInDay + changeInTime)
+    } else {
+      setTimeout(this.randomRunningCheck, hoursInDay - changeInTime)
+    }
   }
 }

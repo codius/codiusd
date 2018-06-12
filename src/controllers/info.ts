@@ -5,8 +5,7 @@ import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
 import * as os from 'os'
 import Config from '../services/Config'
-import { MEGABYTE_SIZE } from '../util/podResourceCheck'
-import LooseObject from '../common/looseObject'
+import { HostInfo } from '../schemas/HostInfo'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
@@ -16,8 +15,8 @@ export default function (server: Hapi.Server, deps: Injector) {
   const config = deps(Config)
 
   async function infoHandler (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const fullMem = podManager.getMemoryUsed() * MEGABYTE_SIZE / os.totalmem() >= config.maxMemoryFraction
-    const infoResp: LooseObject = {
+    const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
+    const infoResp: HostInfo = {
       fullMem,
       numPeers: peerDb.getNumPeers(),
       currency: config.hostCurrency,
@@ -37,7 +36,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   server.route({
     method: 'get',
-    path: '/host-info',
+    path: '/info',
     handler: infoHandler
   })
 }

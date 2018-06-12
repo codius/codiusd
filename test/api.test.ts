@@ -17,10 +17,10 @@ describe('Host info API testing', () => {
       }
     })
   })
-  it('Validates host-info api', done => {
+  it('Validates info api', done => {
     const request = {
       method: 'GET',
-      url: '/host-info'
+      url: '/info'
     }
     if (server) {
       server.inject(request).then(response => {

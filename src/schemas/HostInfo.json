@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+      "fullMem": {
+          "type": "boolean"
+      },
+      "numPeers": {
+          "type": "number"
+      },
+      "currency": {
+          "type": "string"
+      },
+      "costPerMonth": {
+          "type": "number"
+      },
+      "uri": {
+          "type": "string"
+      },
+      "runningContracts": {
+          "type": "number"
+      },
+      "peers": {
+          "type": "array"
+      }
+  },
+  "required": [ "fullMem", "numPeers", "currency", "costPerMonth", "uri" ],
+  "additionalProperties": false
+}

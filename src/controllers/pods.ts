@@ -6,7 +6,7 @@ import { PodRequest } from '../schemas/PodRequest'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from '../services/Config'
 import PodManager from '../services/PodManager'
-import { checkMemory, MEGABYTE_SIZE } from '../util/podResourceCheck'
+import { checkMemory } from '../util/podResourceCheck'
 import PodDatabase from '../services/PodDatabase'
 import ManifestParser from '../services/ManifestParser'
 import os = require('os')
@@ -37,7 +37,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   function checkIfHostFull (podSpec: PodSpec) {
     const totalMem = os.totalmem()
     const totalPodMem = checkMemory(podSpec.resource)
-    if ((podManager.getMemoryUsed() + totalPodMem) * MEGABYTE_SIZE / totalMem > config.maxMemoryFraction) {
+    if ((podManager.getMemoryUsed() + totalPodMem) * (2 ** 20) / totalMem > config.maxMemoryFraction) {
       return true
     }
     return false
@@ -45,10 +45,10 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   function getCurrencyPerSecond (): number {
     // TODO: add support to send information on what currency to use. Then again surely this depends on the moneyd uplink the host is using? Could malicious users lie about their currency?
-    const monthsPerSecond = 0.0000003802571
+    const secondsPerMonth = 2.628e6
     const currencyAssetScale = config.hostAssetScale
     const currencyPerMonth = config.hostCostPerMonth * currencyAssetScale
-    const currencyPerSecond = currencyPerMonth * monthsPerSecond
+    const currencyPerSecond = currencyPerMonth / secondsPerMonth
     return currencyPerSecond
   }
   // TODO: how to add plugin decorate functions to Hapi.Request type

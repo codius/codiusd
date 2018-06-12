@@ -11,6 +11,3 @@ export function checkVCPU (resource: any): number {
   }
   return 1
 }
-
-const MEGABYTE_SIZE = 1048576
-export { MEGABYTE_SIZE }
