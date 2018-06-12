@@ -1,10 +1,10 @@
 version: 2
 jobs:
-  build:
+  build_node_v10:
     docker:
       - image: circleci/node:10
 
-    working_directory: ~/repo
+    working_directory: ~/repo_v10
 
     steps:
       - checkout
@@ -24,3 +24,36 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: npm test
+
+
+  build_node_v8:
+    docker:
+      - image: circleci/node:8
+
+    working_directory: ~/repo_v8
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run: npm test
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build_node_v10
+      - build_node_v8
