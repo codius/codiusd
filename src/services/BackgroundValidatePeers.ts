@@ -33,7 +33,6 @@ export default class BackgroundValidatePeers {
               db.removePeer(peer)
             }
           } catch (err) {
-            db.removePeer(peer)
             log.error(err)
           }
         })
