@@ -26,7 +26,6 @@ export default class Config {
   readonly hostCurrency: string
   readonly hostAssetScale: number
   readonly hostCostPerMonth: number
-  readonly timeZone: string
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -50,7 +49,6 @@ export default class Config {
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 1e6
     this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
-    this.timeZone = env.CODIUS_TIME_ZONE || 'America/Los_Angeles'
   }
 
   getBootstrapPeers (bootstrapPeers?: string): string[] {
