@@ -47,7 +47,7 @@ export default class Config {
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
     this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
     this.hostCurrency = 'XRP'
-    this.hostAssetScale = 1e6
+    this.hostAssetScale = 6
     this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
   }
 
