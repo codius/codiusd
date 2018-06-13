@@ -52,7 +52,7 @@
     "h2o2": "^8.1.2",
     "hapi": "^17.4.0",
     "http-proxy": "^1.17.0",
-    "ilp-connector": "^21.3.0",
+    "ilp-connector": "^21.3.1",
     "ilp-plugin": "^3.1.1",
     "ilp-plugin-mini-balances": "^1.0.2",
     "ilp-protocol-ildcp": "^1.0.0",
