@@ -51,9 +51,9 @@ export default function (server: Hapi.Server, deps: Injector) {
     const currencyPerSecond = currencyPerMonth / secondsPerMonth
     return currencyPerSecond
   }
-  // TODO: how to add plugin decorate functions to Hapi.Request type
-  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
-    const duration = request.query['duration'] || 3600
+
+  async function chargeForDuration (request: any): Promise<string> {
+    const duration = request.query['duration'] || '3600'
 
     const currencyPerSecond = getCurrencyPerSecond()
     log.debug('got post pod request. duration=' + duration)
@@ -68,6 +68,13 @@ export default function (server: Hapi.Server, deps: Injector) {
       log.error('error receiving payment. error=' + e.message)
       throw Boom.paymentRequired('Failed to get payment before timeout')
     }
+
+    return duration
+  }
+
+  // TODO: how to add plugin decorate functions to Hapi.Request type
+  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
+    const duration = await chargeForDuration(request)
 
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
@@ -88,6 +95,29 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${podSpec.id}`)
+    }
+
+    return {
+      url: getPodUrl(podInfo.id),
+      manifestHash: podInfo.id,
+      expiry: podInfo.expiry
+    }
+  }
+
+  async function extendPod (request: any, h: Hapi.ResponseToolkit) {
+    const duration = await chargeForDuration(request)
+
+    const manifestHash = request.query['manifestHash']
+    if (!manifestHash) {
+      throw Boom.badData('manifestHash must be specified')
+    }
+
+    await podDatabase.addDurationToPod(manifestHash, duration)
+
+    const podInfo = podDatabase.getPod(manifestHash)
+    if (!podInfo) {
+      throw Boom.serverUnavailable('pod has stopped. ' +
+        `manifestHash=${manifestHash}`)
     }
 
     return {
@@ -130,6 +160,17 @@ export default function (server: Hapi.Server, deps: Injector) {
       payload: {
         allow: 'application/json',
         output: 'data'
+      }
+    }
+  })
+
+  server.route({
+    method: 'PUT',
+    path: '/pods',
+    handler: extendPod,
+    options: {
+      validate: {
+        payload: false
       }
     }
   })

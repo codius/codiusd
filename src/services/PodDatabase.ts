@@ -1,3 +1,4 @@
+import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import { PodInfo } from '../schemas/PodInfo'
 import CodiusDB from '../util/CodiusDB'
@@ -53,7 +54,7 @@ export default class PodDatabase {
   public async addDurationToPod (id: string, duration: string) {
     const info = this.pods.get(id)
     if (!info) {
-      throw new Error('no pod found with id. id=' + id)
+      throw Boom.notFound('no pod found with id. id=' + id)
     }
 
     // TODO: be more economical with saving pods
@@ -69,7 +70,7 @@ export default class PodDatabase {
   public async setPodIP (id: string, ip: string) {
     const info = this.pods.get(id)
     if (!info) {
-      throw new Error('no pod found with id. id=' + id)
+      throw Boom.notFound('no pod found with id. id=' + id)
     }
 
     info.ip = ip
@@ -83,7 +84,7 @@ export default class PodDatabase {
   public async setPodPort (id: string, port: string) {
     const info = this.pods.get(id)
     if (!info) {
-      throw new Error('no pod found with id. id=' + id)
+      throw Boom.notFound('no pod found with id. id=' + id)
     }
 
     info.port = Number(port)
