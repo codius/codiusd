@@ -11,5 +11,5 @@ export interface HostInfo {
   costPerMonth: number;
   uri: string;
   runningContracts?: number;
-  peers?: any[];
+  peers?: string[];
 }
