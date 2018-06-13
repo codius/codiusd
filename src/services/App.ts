@@ -4,6 +4,7 @@ import Config from './Config'
 import PodManager from './PodManager'
 import PeerFinder from './PeerFinder'
 import HttpServer from './HttpServer'
+import BackgroundValidatePeers from './BackgroundValidatePeers'
 import Secret from './Secret'
 import Money from './Money'
 
@@ -17,6 +18,7 @@ export default class App {
   private podManager: PodManager
   private secret: Secret
   private money: Money
+  private backgroundValidatePeers: BackgroundValidatePeers
 
   constructor (deps: Injector) {
     this.config = deps(Config)
@@ -28,6 +30,7 @@ export default class App {
     this.podManager = deps(PodManager)
     this.secret = deps(Secret)
     this.money = deps(Money)
+    this.backgroundValidatePeers = deps(BackgroundValidatePeers)
   }
 
   async start () {
@@ -39,6 +42,7 @@ export default class App {
     await this.httpServer.start()
     this.peerFinder.start()
     this.podManager.start()
+    this.backgroundValidatePeers.start()
   }
 
   private makeRootDir () {

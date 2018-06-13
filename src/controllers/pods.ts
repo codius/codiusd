@@ -16,12 +16,6 @@ const PodRequest = require('../schemas/PodRequest.json')
 import { create as createLogger } from '../common/log'
 const log = createLogger('pods')
 
-const dropsPerXrp = 1e6
-const xrpPerMonth = Number(process.env.CODIUS_XRP_PER_MONTH) || 10
-const dropsPerMonth = xrpPerMonth * dropsPerXrp
-const monthsPerSecond = 0.0000003802571
-const dropsPerSecond = dropsPerMonth * monthsPerSecond
-
 export interface PostPodResponse {
   url: string,
   manifestHash: string,
@@ -43,18 +37,28 @@ export default function (server: Hapi.Server, deps: Injector) {
   function checkIfHostFull (podSpec: PodSpec) {
     const totalMem = os.totalmem()
     const totalPodMem = checkMemory(podSpec.resource)
-    if ((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
+    if ((podManager.getMemoryUsed() + totalPodMem) * (2 ** 20) / totalMem > config.maxMemoryFraction) {
       return true
     }
     return false
   }
 
+  function getCurrencyPerSecond (): number {
+    // TODO: add support to send information on what currency to use. Then again surely this depends on the moneyd uplink the host is using? Could malicious users lie about their currency?
+    const secondsPerMonth = 2.628e6
+    const currencyAssetScale = config.hostAssetScale
+    const currencyPerMonth = config.hostCostPerMonth * currencyAssetScale
+    const currencyPerSecond = currencyPerMonth / secondsPerMonth
+    return currencyPerSecond
+  }
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     const duration = request.query['duration'] || 3600
+
+    const currencyPerSecond = getCurrencyPerSecond()
     log.debug('got post pod request. duration=' + duration)
 
-    const price = Math.ceil(dropsPerSecond * duration)
+    const price = Math.ceil(currencyPerSecond * duration)
     const stream = request.ilpStream()
 
     try {
@@ -96,8 +100,8 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
     const duration = request.query['duration'] || 3600
     log.debug('got pod options request. duration=' + duration)
-
-    const price = Math.ceil(dropsPerSecond * duration)
+    const currencyPerSecond = getCurrencyPerSecond()
+    const price = Math.ceil(currencyPerSecond * duration)
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private']
