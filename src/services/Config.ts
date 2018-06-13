@@ -43,19 +43,13 @@ export default class Config {
     this.codiusRoot = env.CODIUS_ROOT || '/var/lib/codius'
     this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
     this.devMode = env.CODIUS_DEV === 'true'
-    this.bootstrapPeers = this.getBootstrapPeers(env.CODIUS_BOOTSTRAP_PEERS)
+    this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
+      ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
+      : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
     this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
     this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
-  }
-
-  getBootstrapPeers (bootstrapPeers?: string): string[] {
-    if (this.devMode) {
-      // Do not connect to bootstrap nodes if devMode is switched on
-      return []
-    }
-    return (bootstrapPeers ? JSON.parse(bootstrapPeers) : DEFAULT_BOOTSTRAP_PEERS)
   }
 }
