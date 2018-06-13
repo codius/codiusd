@@ -1,5 +1,6 @@
 import { resolve as resolvePath } from 'path'
 import { PodInfo } from '../schemas/PodInfo'
+import { Manifest } from '../schemas/Manifest'
 import levelup, { LevelUp } from 'levelup'
 import leveldown from 'leveldown'
 import memdown from 'memdown'
@@ -9,6 +10,7 @@ import Config from '../services/Config'
 
 const PEERS_KEY = 'codiusPeers'
 const PODS_KEY = 'codiusPods'
+const MANIFEST_KEY = 'codiusManifests'
 
 export default class CodiusDB {
   private config: Config
@@ -24,6 +26,19 @@ export default class CodiusDB {
       backend = leveldown(resolvePath(this.config.codiusRoot, 'codius.db'))
     }
     this.db = levelup(encode(backend, { valueEncoding: 'json' }))
+  }
+
+  // Manifest Methds
+  async getManifest (hash: string): Promise<Manifest | void> {
+    return this.get(MANIFEST_KEY + ':' + hash)
+  }
+
+  async saveManifest (hash: string, manifest: Manifest) {
+    await this.saveValue(MANIFEST_KEY + ':' + hash, manifest)
+  }
+
+  async deleteManifest (hash: string) {
+    await this.delete(MANIFEST_KEY + ':' + hash)
   }
 
   // Pod methods

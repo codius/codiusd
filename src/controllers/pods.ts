@@ -8,6 +8,7 @@ import Config from '../services/Config'
 import PodManager from '../services/PodManager'
 import { checkMemory } from '../util/podResourceCheck'
 import PodDatabase from '../services/PodDatabase'
+import ManifestDatabase from '../services/ManifestDatabase'
 import ManifestParser from '../services/ManifestParser'
 import os = require('os')
 const Enjoi = require('enjoi')
@@ -25,6 +26,7 @@ export interface PostPodResponse {
 export default function (server: Hapi.Server, deps: Injector) {
   const podManager = deps(PodManager)
   const podDatabase = deps(PodDatabase)
+  const manifestDatabase = deps(ManifestDatabase)
   const manifestParser = deps(ManifestParser)
   const config = deps(Config)
 
@@ -89,6 +91,8 @@ export default function (server: Hapi.Server, deps: Injector) {
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
 
+    await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
+
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
 
@@ -124,6 +128,29 @@ export default function (server: Hapi.Server, deps: Injector) {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
       expiry: podInfo.expiry
+    }
+  }
+
+  async function getPod (request: any, h: Hapi.ResponseToolkit) {
+    const manifestHash = request.query['manifestHash']
+    if (!manifestHash) {
+      throw Boom.badData('manifestHash must be specified')
+    }
+
+    const manifest = await manifestDatabase.getManifest(manifestHash)
+    const podInfo = podDatabase.getPod(manifestHash)
+    if (!podInfo) {
+      // make sure that the manifest was cleaned up
+      await manifestDatabase.deleteManifest(manifestHash)
+      throw Boom.serverUnavailable('pod has stopped. ' +
+        `manifestHash=${manifestHash}`)
+    }
+
+    return {
+      url: getPodUrl(podInfo.id),
+      manifestHash: podInfo.id,
+      expiry: podInfo.expiry,
+      manifest
     }
   }
 
@@ -168,6 +195,17 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'PUT',
     path: '/pods',
     handler: extendPod,
+    options: {
+      validate: {
+        payload: false
+      }
+    }
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/pods',
+    handler: getPod,
     options: {
       validate: {
         payload: false
