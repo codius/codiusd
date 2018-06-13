@@ -3,6 +3,7 @@ import { Injector } from 'reduct'
 const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.justmoon.com',
   'https://codius.andros-connector.com',
+  'https://codius.africa',
   'https://codius.risky.business',
   'https://codius.feraltc.com',
   'https://codius.tinypolarbear.com'
@@ -16,11 +17,15 @@ export default class Config {
   readonly publicUri: string
   readonly codiusRoot: string
   readonly memdownPersist: boolean
-  readonly bootstrapPeers: string
+  readonly bootstrapPeers: string[]
   readonly maxMemoryFraction: number
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
   readonly devMode: boolean
+  readonly showAdditionalHostInfo: boolean
+  readonly hostCurrency: string
+  readonly hostAssetScale: number
+  readonly hostCostPerMonth: number
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -42,5 +47,9 @@ export default class Config {
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
+    this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
+    this.hostCurrency = 'XRP'
+    this.hostAssetScale = 6
+    this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
   }
 }

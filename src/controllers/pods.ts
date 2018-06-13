@@ -8,6 +8,7 @@ import Config from '../services/Config'
 import PodManager from '../services/PodManager'
 import { checkMemory } from '../util/podResourceCheck'
 import PodDatabase from '../services/PodDatabase'
+import ManifestDatabase from '../services/ManifestDatabase'
 import ManifestParser from '../services/ManifestParser'
 import os = require('os')
 const Enjoi = require('enjoi')
@@ -15,12 +16,6 @@ const PodRequest = require('../schemas/PodRequest.json')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('pods')
-
-const dropsPerXrp = 1e6
-const xrpPerMonth = Number(process.env.CODIUS_XRP_PER_MONTH) || 10
-const dropsPerMonth = xrpPerMonth * dropsPerXrp
-const monthsPerSecond = 0.0000003802571
-const dropsPerSecond = dropsPerMonth * monthsPerSecond
 
 export interface PostPodResponse {
   url: string,
@@ -31,6 +26,7 @@ export interface PostPodResponse {
 export default function (server: Hapi.Server, deps: Injector) {
   const podManager = deps(PodManager)
   const podDatabase = deps(PodDatabase)
+  const manifestDatabase = deps(ManifestDatabase)
   const manifestParser = deps(ManifestParser)
   const config = deps(Config)
 
@@ -43,18 +39,28 @@ export default function (server: Hapi.Server, deps: Injector) {
   function checkIfHostFull (podSpec: PodSpec) {
     const totalMem = os.totalmem()
     const totalPodMem = checkMemory(podSpec.resource)
-    if ((podManager.getMemoryUsed() + totalPodMem) * 1048576 / totalMem > config.maxMemoryFraction) {
+    if ((podManager.getMemoryUsed() + totalPodMem) * (2 ** 20) / totalMem > config.maxMemoryFraction) {
       return true
     }
     return false
   }
 
-  // TODO: how to add plugin decorate functions to Hapi.Request type
-  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
-    const duration = request.query['duration'] || 3600
+  function getCurrencyPerSecond (): number {
+    // TODO: add support to send information on what currency to use. Then again surely this depends on the moneyd uplink the host is using? Could malicious users lie about their currency?
+    const secondsPerMonth = 2.628e6
+    const currencyAssetScale = config.hostAssetScale
+    const currencyPerMonth = config.hostCostPerMonth * Math.pow(10, currencyAssetScale)
+    const currencyPerSecond = currencyPerMonth / secondsPerMonth
+    return currencyPerSecond
+  }
+
+  async function chargeForDuration (request: any): Promise<string> {
+    const duration = request.query['duration'] || '3600'
+
+    const currencyPerSecond = getCurrencyPerSecond()
     log.debug('got post pod request. duration=' + duration)
 
-    const price = Math.ceil(dropsPerSecond * duration)
+    const price = Math.ceil(currencyPerSecond * duration)
     const stream = request.ilpStream()
 
     try {
@@ -64,6 +70,13 @@ export default function (server: Hapi.Server, deps: Injector) {
       log.error('error receiving payment. error=' + e.message)
       throw Boom.paymentRequired('Failed to get payment before timeout')
     }
+
+    return duration
+  }
+
+  // TODO: how to add plugin decorate functions to Hapi.Request type
+  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
+    const duration = await chargeForDuration(request)
 
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
@@ -77,6 +90,8 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
+
+    await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
 
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
@@ -93,11 +108,57 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
+  async function extendPod (request: any, h: Hapi.ResponseToolkit) {
+    const duration = await chargeForDuration(request)
+
+    const manifestHash = request.query['manifestHash']
+    if (!manifestHash) {
+      throw Boom.badData('manifestHash must be specified')
+    }
+
+    await podDatabase.addDurationToPod(manifestHash, duration)
+
+    const podInfo = podDatabase.getPod(manifestHash)
+    if (!podInfo) {
+      throw Boom.serverUnavailable('pod has stopped. ' +
+        `manifestHash=${manifestHash}`)
+    }
+
+    return {
+      url: getPodUrl(podInfo.id),
+      manifestHash: podInfo.id,
+      expiry: podInfo.expiry
+    }
+  }
+
+  async function getPod (request: any, h: Hapi.ResponseToolkit) {
+    const manifestHash = request.query['manifestHash']
+    if (!manifestHash) {
+      throw Boom.badData('manifestHash must be specified')
+    }
+
+    const manifest = await manifestDatabase.getManifest(manifestHash)
+    const podInfo = podDatabase.getPod(manifestHash)
+    if (!podInfo) {
+      // make sure that the manifest was cleaned up
+      await manifestDatabase.deleteManifest(manifestHash)
+      throw Boom.serverUnavailable('pod has stopped. ' +
+        `manifestHash=${manifestHash}`)
+    }
+
+    return {
+      url: getPodUrl(podInfo.id),
+      manifestHash: podInfo.id,
+      expiry: podInfo.expiry,
+      manifest
+    }
+  }
+
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
     const duration = request.query['duration'] || 3600
     log.debug('got pod options request. duration=' + duration)
-
-    const price = Math.ceil(dropsPerSecond * duration)
+    const currencyPerSecond = getCurrencyPerSecond()
+    const price = Math.ceil(currencyPerSecond * duration)
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private']
@@ -126,6 +187,28 @@ export default function (server: Hapi.Server, deps: Injector) {
       payload: {
         allow: 'application/json',
         output: 'data'
+      }
+    }
+  })
+
+  server.route({
+    method: 'PUT',
+    path: '/pods',
+    handler: extendPod,
+    options: {
+      validate: {
+        payload: false
+      }
+    }
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/pods',
+    handler: getPod,
+    options: {
+      validate: {
+        payload: false
       }
     }
   })

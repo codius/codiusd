@@ -29,7 +29,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       throw Boom.notFound('no pod with that hash found. ' +
         `hash=${label}`)
     }
-
+    log.debug('podIP', pod.ip, pod.port)
     return `http://${pod.ip}:${pod.port}`
   }
 

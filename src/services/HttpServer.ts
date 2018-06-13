@@ -4,6 +4,7 @@ import registerStaticController from '../controllers/static'
 import registerPeersController from '../controllers/peers'
 import registerPodsController from '../controllers/pods'
 import registerProxyController from '../controllers/proxy'
+import registerInfoController from '../controllers/info'
 import { Injector } from 'reduct'
 import * as Inert from 'inert'
 import Config from './Config'
@@ -19,7 +20,7 @@ export default class HttpServer {
   constructor (deps: Injector) {
     this.config = deps(Config)
     this.server = new Hapi.Server({
-      uri: this.config.publicUri,
+      uri: this.config.publicUri.replace(/\/+$/, ''),
       address: this.config.bindIp,
       port: this.config.port
     })
@@ -29,12 +30,15 @@ export default class HttpServer {
     registerPeersController(this.server, deps)
     registerPodsController(this.server, deps)
     registerProxyController(this.server, deps)
+    registerInfoController(this.server, deps)
   }
 
   async start () {
     await this.server.register({ plugin: require('h2o2') })
-    await this.server.register(HapiCog)
     await this.server.register(Inert)
+    if (!this.config.devMode) {
+      await this.server.register(HapiCog)
+    }
     await this.server.start()
 
     log.info('listening at %s', this.server.info.uri)
@@ -42,5 +46,12 @@ export default class HttpServer {
 
   getUrl () {
     return this.server.info.uri
+  }
+
+  getServer () {
+    if (process.env.NODE_ENV === 'test') {
+      return this.server
+    }
+    return null
   }
 }
