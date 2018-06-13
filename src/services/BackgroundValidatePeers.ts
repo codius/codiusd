@@ -20,13 +20,17 @@ export default class BackgroundValidatePeers {
     const db = this.peerDb
     const peers = db.getAllPeers()
     peers.forEach(async (peer: string) => {
-      try {
-        const peerInfo = await axios.get(peer + '/info')
-        if (peer !== peerInfo.data.uri || !shallowValidatePeer(peer)) {
-          db.removePeer(peer)
+      if (!shallowValidatePeer(peer)) {
+        db.removePeer(peer)
+      } else {
+        try {
+          const peerInfo = await axios.get(peer + '/info')
+          if (peer !== peerInfo.data.uri) {
+            db.removePeer(peer)
+          }
+        } catch (err) {
+          log.error(err)
         }
-      } catch (err) {
-        log.error(err)
       }
     })
     const addOrSubtract = Math.random()
