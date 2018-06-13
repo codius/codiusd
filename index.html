@@ -1,7 +1,37 @@
 <html>
   <h2>Welcome to Codius!</h2>
   <p>If you're seeing this page, that means that your Codius host is up and running!</p>
-  <p>You can view information about your Codius host at these links:</p>
-  <li><a href="/peers">Peers of this host</a></li>
+  <table>
+    <tr>
+      <td>Number of Peers: </td>
+      <td id="numPeers"></td>
+    </tr>
+    <tr>
+      <td>Currencies Accepted: </td>
+      <td id="currency"></td>
+    </tr>
+    <tr>
+      <td>Monthly Hosting Rate: </td>
+      <td id="costPerMonth"></td>
+    </tr>
+    <tr>
+      <td>Max Memory Used?</td>
+      <td id="fullMem"></td>
+    </tr>
+  </table>
+  <p>You can view additional information about your Codius host at these links:</p>
+  <li><a href="/peers">Peers of this host (Random set of 10)</a></li>
   <li><a href="/version">Current running version of Codius</a></li>
+  <script>
+  	fetch(document.location.origin+'/info')
+  	  .then(function(response){
+        return response.json()
+      })
+      .then(function(myJson) {
+        console.log(myJson)
+        for(var item in myJson) {
+          document.getElementById(item).append(myJson[item])
+        }
+      })
+  </script>
 </html>
