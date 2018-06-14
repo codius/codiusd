@@ -1,6 +1,8 @@
 <html>
-  <h2>Welcome to Codius!</h2>
-  <p>If you're seeing this page, that means that your Codius host is up and running!</p>
+  <h2 id="header">Codius Host at </h2>
+  <p>This server is a Codius Host being run with <a href="https://github.com/codius/codiusd">codiusd.</a> If you want to upload a contract to this host, you may do so with the <a href="https://github.com/codius/codius">Codius CLI.</a></p>
+  
+  <p>For more information on Codius, visit <a href="https://codius.org">codius.org.</a></p>
   <table>
     <tr>
       <td>Number of Peers: </td>
@@ -23,6 +25,7 @@
   <li><a href="/peers">Peers of this host (Random set of 10)</a></li>
   <li><a href="/version">Current running version of Codius</a></li>
   <script>
+    document.getElementById("header").append(document.location.origin)
   	fetch(document.location.origin+'/info')
   	  .then(function(response){
         return response.json()
