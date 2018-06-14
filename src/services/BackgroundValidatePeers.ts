@@ -13,7 +13,7 @@ export default class BackgroundValidatePeers {
   }
 
   start () {
-    setTimeout(this.randomRunningCheck.bind(this), 0)
+    setTimeout(this.randomRunningCheck.bind(this), hoursInDay)
   }
 
   private randomRunningCheck () {
