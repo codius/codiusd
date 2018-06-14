@@ -4,6 +4,7 @@ import { PodSpec } from '../schemas/PodSpec'
 import Config from './Config'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
+import ManifestDatabase from './ManifestDatabase'
 import { checkMemory } from '../util/podResourceCheck'
 import {
   block,
@@ -25,11 +26,13 @@ const DEFAULT_INTERVAL = 5000
 export default class PodManager {
   private hyper: HyperClient
   private pods: PodDatabase
+  private manifests: ManifestDatabase
   private hyperClient: HyperClient
   private config: Config
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
+    this.manifests = deps(ManifestDatabase)
     this.hyper = deps(HyperClient)
     this.hyperClient = deps(HyperClient)
     this.config = deps(Config)
@@ -65,6 +68,7 @@ export default class PodManager {
       log.debug('cleaning up pod. id=' + pod)
       try {
         await this.hyperClient.deletePod(pod)
+        await this.manifests.deleteManifest(pod)
       } catch (e) {
         log.error('error cleaning up pod. ' +
           `id=${pod} ` +

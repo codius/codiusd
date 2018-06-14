@@ -50,9 +50,9 @@ export default class PeerDatabase {
       }
       try {
         // Check for invalid peer addresses. Validate peer only if not in set.
-        if (!this.peers.has(peer)) {
+        if (!this.peers.has(peer) && shallowValidatePeer(peer)) {
           const peerInfo = await axios.get(peer + '/info')
-          if (peer === peerInfo.data.uri && shallowValidatePeer(peer)) {
+          if (peer === peerInfo.data.uri) {
             this.memoryMap.set(peer, peerInfo.data.fullMem)
             this.peers.add(peer)
           }
@@ -60,7 +60,7 @@ export default class PeerDatabase {
 
       } catch (e) {
         if (process.env.NODE_ENV !== 'test') {
-	  log.error('Error code %s at %s', e, peer)
+	        log.error('Error code %s at %s', e, peer)
         }
       }
 
