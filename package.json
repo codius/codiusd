@@ -43,6 +43,7 @@
   "homepage": "https://github.com/codius/codiusd#readme",
   "dependencies": {
     "@sharafian/cog": "0.0.4",
+    "@types/inert": "^5.1.1",
     "axios": "^0.18.0",
     "canonical-json": "0.0.4",
     "debug": "^3.1.0",
@@ -56,6 +57,7 @@
     "ilp-plugin": "^3.1.1",
     "ilp-plugin-mini-balances": "^1.0.2",
     "ilp-protocol-ildcp": "^1.0.0",
+    "inert": "^5.1.0",
     "leveldown": "^4.0.1",
     "levelup": "^3.0.1",
     "lodash": "^4.17.10",
