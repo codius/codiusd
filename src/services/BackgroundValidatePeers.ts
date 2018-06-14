@@ -13,10 +13,11 @@ export default class BackgroundValidatePeers {
   }
 
   start () {
-    setTimeout(this.randomRunningCheck, hoursInDay)
+    setTimeout(this.randomRunningCheck.bind(this), hoursInDay)
   }
 
   private randomRunningCheck () {
+    log.debug('running Background check...')
     const db = this.peerDb
     const peers = db.getAllPeers()
     peers.forEach(async (peer: string) => {
