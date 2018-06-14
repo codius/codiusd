@@ -26,6 +26,8 @@ export default class Config {
   readonly hostCurrency: string
   readonly hostAssetScale: number
   readonly hostCostPerMonth: number
+  readonly adminApi: boolean
+  readonly adminPort: number
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -51,5 +53,11 @@ export default class Config {
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
     this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
+
+
+    // Admin API Config
+    this.adminApi = env.CODIUS_ADMIN_API === 'true'
+    this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
+
   }
 }
