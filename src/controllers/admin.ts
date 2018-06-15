@@ -29,12 +29,12 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function getPodInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    debug.log('Querying pod info for: ', request.query['id'])
     return podDatabase.getPod(request.query['id'])
   }
 
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
-
     const profit = Number(uptime) * getCurrencyPerSecond()
 
     return {

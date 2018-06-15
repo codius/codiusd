@@ -122,7 +122,9 @@ export default class PodDatabase {
   public async getLifetimePodsUptime () {
     let lifetimeUp = 0
     for (let [key, value] of this.pods) {
-      lifetimeUp += value.totalUptime
+      if (value.totalUptime) {
+        lifetimeUp += value.totalUptime
+      }
     }
 
     return lifetimeUp
