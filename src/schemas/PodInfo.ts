@@ -7,10 +7,10 @@
 export interface PodInfo {
   id: string;
   running: boolean;
-  start?: string;
+  start: string;
   expiry: string;
   port?: number;
   ip?: string;
   memory?: number;
-  totalUptime?: number;
+  totalUptime: number;
 }

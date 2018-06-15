@@ -96,11 +96,16 @@ export default class PodDatabase {
   }
 
   public async addPod (params: AddPodParams) {
+    const existing = this.pods.get(params.id)
+    const uptime = existing ? existing.totalUptime + Number(params.duration) : Number(params.duration)
+
     const info: PodInfo = {
       id: params.id,
       running: params.running,
+      start: new Date().toISOString(),
       expiry: addDuration(params.duration),
-      memory: params.memory
+      memory: params.memory,
+      totalUptime: uptime
     }
 
     this.pods.set(info.id, info)
@@ -112,6 +117,15 @@ export default class PodDatabase {
       `duration=${params.duration} ` +
       `expiry=${info.expiry} ` +
       `memory=${info.memory} `)
+  }
+
+  public async getLifetimePodsUptime () {
+    let lifetimeUp = 0
+    for (let [key, value] of this.pods) {
+      lifetimeUp += value.totalUptime
+    }
+
+    return lifetimeUp
   }
 
   private async loadPodsFromDB () {

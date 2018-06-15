@@ -26,6 +26,6 @@
       "type": "number"
     }
   },
-  "required": [ "id", "running", "expiry" ],
+  "required": [ "id", "running", "start", "expiry", "totalUptime" ],
   "additionalProperties": false
 }
