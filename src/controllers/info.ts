@@ -4,6 +4,7 @@ import PodDatabase from '../services/PodDatabase'
 import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
 import * as os from 'os'
+import * as process from 'process'
 import Config from '../services/Config'
 import { HostInfo } from '../schemas/HostInfo'
 
@@ -18,6 +19,9 @@ export default function (server: Hapi.Server, deps: Injector) {
     const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
     const infoResp: HostInfo = {
       fullMem,
+      serverUptime: os.uptime(),
+      serviceUptime: process.uptime(),
+      avgLoad: os.loadavg()[0],
       numPeers: peerDb.getNumPeers(),
       currency: config.hostCurrency,
       costPerMonth: config.hostCostPerMonth,
@@ -26,7 +30,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     const hapiQuery = JSON.parse(JSON.stringify(request.query))
     if (config.showAdditionalHostInfo) {
       infoResp.runningContracts = podDatabase.getRunningPods().length
-      // TODO: add other information which is interesting, like uptime, etc?
+      // TODO: add other relevant information like number of running pods, average uptime per pod...
       if (hapiQuery && hapiQuery.requestPeers === 'true') {
         infoResp.peers = peerDb.getAllPeers()
       }

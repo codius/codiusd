@@ -6,6 +6,9 @@
 
 export interface HostInfo {
   fullMem: boolean;
+  serverUptime?: number;
+  serviceUptime?: number;
+  avgLoad?: number;
   numPeers: number;
   currency: string;
   costPerMonth: number;
