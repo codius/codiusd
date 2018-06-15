@@ -28,17 +28,8 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
-  async function getExpiredPods (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    return {
-      expired: podDatabase.getExpiredPods()
-    }
-  }
-
-  async function getAllPods (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    return {
-      running: podDatabase.getRunningPods(),
-      expired: podDatabase.getExpiredPods()
-    }
+  async function getPodInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return podDatabase.getPod(request.query['id'])
   }
 
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -61,19 +52,13 @@ export default function (server: Hapi.Server, deps: Injector) {
   server.route({
     method: 'GET',
     path: '/getPods',
-    handler: getAllPods
-  })
-
-  server.route({
-    method: 'GET',
-    path: '/getExpiredPods',
-    handler: getExpiredPods
-  })
-
-  server.route({
-    method: 'GET',
-    path: '/getRunningPods',
     handler: getRunningPods
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/getPodInfo',
+    handler: getPodInfo
   })
 
   server.route({
