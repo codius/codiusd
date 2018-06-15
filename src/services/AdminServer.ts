@@ -32,7 +32,7 @@ export default class AdminServer {
     return this.server.info.uri
   }
 
-  getServer() {
+  getServer () {
     if (process.env.NODE_ENV === 'test') {
       return this.server
     }

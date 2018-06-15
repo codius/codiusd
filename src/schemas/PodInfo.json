@@ -7,6 +7,9 @@
     "running": {
       "type": "boolean"
     },
+    "start": {
+      "type": "string"
+    },
     "expiry": {
       "type": "string"
     },
@@ -17,6 +20,9 @@
       "type": "string"
     },
     "memory": {
+      "type": "number"
+    },
+    "totalUptime": {
       "type": "number"
     }
   },

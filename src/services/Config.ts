@@ -54,7 +54,6 @@ export default class Config {
     this.hostAssetScale = 6
     this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
 
-
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
