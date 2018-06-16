@@ -3,6 +3,9 @@ import Config from '../services/Config'
 import PodDatabase from '../services/PodDatabase'
 import { Injector } from 'reduct'
 
+import { create as createLogger } from '../common/log'
+const log = createLogger('admin')
+
 export default function (server: Hapi.Server, deps: Injector) {
   const podDatabase = deps(PodDatabase)
   const config = deps(Config)
@@ -29,7 +32,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function getPodInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    debug.log('Querying pod info for: ', request.query['id'])
+    log.debug('Querying pod info for: ', request.query['id'])
     return podDatabase.getPod(request.query['id'])
   }
 
