@@ -7,6 +7,7 @@ import { PodSpec } from '../schemas/PodSpec'
 import Config from '../services/Config'
 import PodManager from '../services/PodManager'
 import { checkMemory } from '../util/podResourceCheck'
+import { getCurrencyPerSecond } from '../util/priceRate'
 import PodDatabase from '../services/PodDatabase'
 import ManifestDatabase from '../services/ManifestDatabase'
 import ManifestParser from '../services/ManifestParser'
@@ -43,15 +44,6 @@ export default function (server: Hapi.Server, deps: Injector) {
       return true
     }
     return false
-  }
-
-  function getCurrencyPerSecond (): number {
-    // TODO: add support to send information on what currency to use. Then again surely this depends on the moneyd uplink the host is using? Could malicious users lie about their currency?
-    const secondsPerMonth = 2.628e6
-    const currencyAssetScale = config.hostAssetScale
-    const currencyPerMonth = config.hostCostPerMonth * Math.pow(10, currencyAssetScale)
-    const currencyPerSecond = currencyPerMonth / secondsPerMonth
-    return currencyPerSecond
   }
 
   async function chargeForDuration (request: any): Promise<string> {

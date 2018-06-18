@@ -2,6 +2,7 @@ import * as Hapi from 'hapi'
 import Config from '../services/Config'
 import PodDatabase from '../services/PodDatabase'
 import { Injector } from 'reduct'
+import { getCurrencyPerSecond } from '../util/priceRate'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('admin')
@@ -9,15 +10,6 @@ const log = createLogger('admin')
 export default function (server: Hapi.Server, deps: Injector) {
   const podDatabase = deps(PodDatabase)
   const config = deps(Config)
-
-  function getCurrencyPerSecond (): number {
-    // TODO: add support to send information on what currency to use. Then again surely this depends on the moneyd uplink the host is using? Could malicious users lie about their currency?
-    const secondsPerMonth = 2.628e6
-    const currencyAssetScale = config.hostAssetScale
-    const currencyPerMonth = config.hostCostPerMonth * Math.pow(10, currencyAssetScale)
-    const currencyPerSecond = currencyPerMonth / secondsPerMonth
-    return currencyPerSecond
-  }
 
   async function getAdminInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
