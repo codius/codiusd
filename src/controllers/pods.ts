@@ -50,11 +50,9 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function chargeForDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
 
-    console.log(typeof config)
     const currencyPerSecond = getCurrencyPerSecond(config)
-    log.debug('got post pod request. duration=' + duration)
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
-    log.debug('price: ' + price.toString())
+    log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
 
     const stream = request.ilpStream()
     try {
@@ -150,11 +148,9 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
     const duration = request.query['duration'] || 3600
-    log.debug('got pod options request. duration=' + duration)
     const currencyPerSecond = getCurrencyPerSecond(config)
-    log.debug(currencyPerSecond.toString())
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
-    log.debug(price.toString())
+    log.debug('got pod options request. duration=' + duration + ' price=' + price.toString())
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private']
