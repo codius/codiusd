@@ -49,7 +49,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function chargeForDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
 
-    const currencyPerSecond = getCurrencyPerSecond()
+    const currencyPerSecond = getCurrencyPerSecond(deps)
     log.debug('got post pod request. duration=' + duration)
 
     const price = Math.ceil(currencyPerSecond * duration)
@@ -149,7 +149,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
     const duration = request.query['duration'] || 3600
     log.debug('got pod options request. duration=' + duration)
-    const currencyPerSecond = getCurrencyPerSecond()
+    const currencyPerSecond = getCurrencyPerSecond(deps)
     const price = Math.ceil(currencyPerSecond * duration)
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
