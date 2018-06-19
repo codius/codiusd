@@ -98,7 +98,7 @@ export default class PodDatabase {
 
   public async addPod (params: AddPodParams) {
     const existing = this.pods.get(params.id)
-    const uptime = existing && existing.totalUptime ? existing.totalUptime + Number(params.duration) : Number(params.duration)
+    const uptime = existing && existing.totalUptime || 0 + Number(params.duration)
 
     const info: PodInfo = {
       id: params.id,
