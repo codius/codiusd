@@ -3,6 +3,7 @@ import Config from '../services/Config'
 import PodDatabase from '../services/PodDatabase'
 import { Injector } from 'reduct'
 import { getCurrencyPerSecond } from '../util/priceRate'
+import BigNumber from 'bignumber.js'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('admin')
@@ -30,11 +31,11 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
-    const profit = Number(uptime) * getCurrencyPerSecond(deps) / Math.pow(10, config.hostAssetScale)
+    const profit = uptime.times(getCurrencyPerSecond(config).div(new BigNumber(10).pow(config.hostAssetScale)))
 
     return {
-      aggregate_pod_uptime: uptime,
-      aggregate_earnings: profit,
+      aggregate_pod_uptime: uptime.toString(),
+      aggregate_earnings: profit.toString(),
       currency: config.hostCurrency
     }
   }
