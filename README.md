@@ -89,7 +89,7 @@ sudo npm install -g codiusd
 
 ##### Open Issues
 
-* [ ] Block network traffic between pods by default
+* [x] Block network traffic between pods by default
 * [ ] Add plugin decorator to Hapi.Request type
 * [x] Figure out encoding to hash manifest
 * [ ] How to escape the variable interpolation in manifest parser
