@@ -1,4 +1,5 @@
 import * as Hapi from 'hapi'
+import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
@@ -8,9 +9,15 @@ export default function (server: Hapi.Server, deps: Injector) {
   const ver = deps(Version)
 
   async function getPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    return {
-      peers: peerDb.getPeers()
+    let n
+    const params = request.query
+    if (typeof params !== 'string' && params.n) {
+      n = Number(params.n)
+      if (isNaN(n)) {
+        throw Boom.badRequest('Invalid n')
+      }
     }
+    return { peers: peerDb.getPeers(n) }
   }
 
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {

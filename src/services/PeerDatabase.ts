@@ -28,7 +28,7 @@ export default class PeerDatabase {
     this.loadPeersFromDB().catch(err => log.error(err))
   }
 
-  public getPeers (numPeers = 10) {
+  public getPeers (numPeers = 1000) {
     return choices(Array.from(this.peers), numPeers)
   }
 
@@ -60,7 +60,7 @@ export default class PeerDatabase {
 
       } catch (e) {
         if (process.env.NODE_ENV !== 'test') {
-	        log.error('Error code %s at %s', e, peer)
+	        log.error('%s for %s', e, peer + '/info')
         }
       }
 
