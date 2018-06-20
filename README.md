@@ -87,6 +87,64 @@ sudo npm install -g codiusd
 * Description: List of peers whose values are the URIs that resolve to their Codius instance.
 * Default: [ ]
 
+### API Documentation
+#### `POST /pods?duration=TIME_TO_LIVE`
+Create a pod that runs a given [Codius Manifest](https://github.com/coilhq/codius-manifest) and purchases the amount of time that the host will run it using [Interledger](https://interledger.org)
+
+##### Request Body:
+* Type: Object
+
+| Field Name | Type     | Description              |
+|------------|----------|--------------------------|
+| manifest   | Object   | An object containing a manifest for your code. The format can be found [here](https://github.com/coilhq/codius-manifest).|
+| private    | Object   | An object containing private variables you want to pass to the host, such as an AWS key. An example can be found as part of the manifest format [here](https://github.com/coilhq/codius-manifest).|
+
+##### Return Value:
+* Type: Object
+
+| Field Name | Type     | Description              |
+|------------|----------|--------------------------|
+| url        | string   | A URL resolving to the ip address of the pod that was just created. It is comprised of the pod's manifest hash followed by the hostname of the codius host.|
+| manifestHash | string | The hash of the manifest that was passed to the Codius host.|
+| expiry     | string   | A timestamp of when the pod will expire. |
+
+* Variables:
+   * `duration`: Time in seconds for the Codius host to run your code. Makes an Interledger payment to buy the requested amount of time. Required.
+
+#### `GET /peers`
+Returns the peers currently known to this host.
+
+##### Return Value:
+* Type: Array[String]
+* Description: An array of size 10 containing peers known to the Codius Host.
+
+#### `POST /peers/discover`
+Queries other Codius hosts for the peers known to each of them.
+
+##### Request Body
+* Type: Object
+
+| Field Name | Type   | Description                |
+|------------|--------|----------------------------|
+| peers      | Array[string] | An array of URIs of Codius hosts to query for additional peers.|
+
+##### Return Value
+* Type: Object
+
+| Field Name | Type   | Description                |
+|------------|--------|----------------------------|
+| name       | string | Name of the implementation of Codius that the host is running. In this case it is 'Codiusd (Javascript)'|
+| version    | string | The version of Codiusd that the host is running, as described in `package.json`.|
+| peers      | Array[string]  | An array of peers known to the set of queried Codius hosts.|
+
+#### `GET /version`
+* Type: Object
+
+| Field Name | Type   | Description               |
+|------------|--------|---------------------------|
+| name       | string | Name describing the name of the Codius implementation that the host is running. In this case it is 'Codiusd (Javascript)'|
+| version    | string | The version of Codiusd that the host is running, as described in `package.json`.|
+
 ##### Open Issues
 
 * [ ] Block network traffic between pods by default
