@@ -2,7 +2,7 @@
 > Codiusd (Codius Daemon) is the server-side component of Codius
 
 [![NPM Package](https://img.shields.io/npm/v/codiusd.svg?style=flat)](https://npmjs.org/package/codiusd)
-[![CircleCI](https://circleci.com/gh/codius/codiusd.svg?style=shield)](https://circleci.com/gh/codiusd/codiusd)
+[![CircleCI](https://circleci.com/gh/codius/codiusd.svg?style=shield)](https://circleci.com/gh/codius/codiusd)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 [Codius](https://codius.org) is an open-source decentralized hosting platform using [Interledger](https://interledger.org). It allows anyone to run software on servers all over the world and pay using any currency. Users package their software inside of [containers](https://www.docker.com/what-container). Multiple containers can run together inside of a [pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/).
