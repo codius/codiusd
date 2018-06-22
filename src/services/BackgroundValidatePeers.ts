@@ -19,27 +19,29 @@ export default class BackgroundValidatePeers {
   private randomRunningCheck () {
     log.debug('running Background check...')
     const db = this.peerDb
-    const peers = db.getAllPeers()
-    peers.forEach(async (peer: string) => {
-      if (!shallowValidatePeer(peer)) {
-        db.removePeer(peer)
-      } else {
-        try {
-          const peerInfo = await axios.get(peer + '/info')
-          if (peer !== peerInfo.data.uri) {
-            db.removePeer(peer)
+    if (db) {
+      const peers = db.getAllPeers()
+      peers.forEach(async (peer: string) => {
+        if (!shallowValidatePeer(peer)) {
+          db.removePeer(peer)
+        } else {
+          try {
+            const peerInfo = await axios.get(peer + '/info')
+            if (peer !== peerInfo.data.uri) {
+              db.removePeer(peer)
+            }
+          } catch (err) {
+            log.error(err)
           }
-        } catch (err) {
-          log.error(err)
         }
-      }
-    })
+      })
+    }
     const addOrSubtract = Math.random()
     const changeInTime = Math.random() * 1000 * 60 * 30
     if (addOrSubtract > 0.5) {
-      setTimeout(this.randomRunningCheck, hoursInDay + changeInTime)
+      setTimeout(this.randomRunningCheck.bind(this), hoursInDay + changeInTime)
     } else {
-      setTimeout(this.randomRunningCheck, hoursInDay - changeInTime)
+      setTimeout(this.randomRunningCheck.bind(this), hoursInDay - changeInTime)
     }
   }
 }
