@@ -4,6 +4,15 @@
       "fullMem": {
           "type": "boolean"
       },
+      "serverUptime": {
+          "type": "number"
+      },
+      "serviceUptime": {
+          "type": "number"
+      },
+      "avgLoad": {
+          "type": "number"
+      },
       "numPeers": {
           "type": "number"
       },
@@ -21,8 +30,8 @@
       },
       "peers": {
           "type": "array",
-          "items": { 
-              "type": "string" 
+          "items": {
+              "type": "string"
            }
       }
   },
