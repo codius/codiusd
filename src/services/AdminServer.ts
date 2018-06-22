@@ -18,11 +18,9 @@ export default class AdminServer {
       address: '127.0.0.1'
     })
 
-    // TODO: Register Admin Controller
     registerAdminController(this.server, deps)
   }
   async start () {
-    await this.server.register({ plugin: require('h2o2') })
     await this.server.start()
 
     log.info('Admin Server listening at %s', this.server.info.uri)

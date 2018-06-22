@@ -98,7 +98,7 @@ export default class PodDatabase {
 
   public async addPod (params: AddPodParams) {
     const existing = this.pods.get(params.id)
-    const uptime = existing && existing.totalUptime || 0 + Number(params.duration)
+    const uptime = ((existing && existing.totalUptime) || 0) + Number(params.duration)
 
     const info: PodInfo = {
       id: params.id,
@@ -122,7 +122,7 @@ export default class PodDatabase {
 
   public getLifetimePodsUptime (): BigNumber {
     let lifetimeUp = 0
-    for (let [_, value] of this.pods) {
+    for (const value of this.pods.values()) {
       if (value.totalUptime) {
         lifetimeUp += Number(value.totalUptime)
       }

@@ -32,6 +32,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
     const profit = uptime.times(getCurrencyPerSecond(config).div(new BigNumber(10).pow(config.hostAssetScale)))
+    // NOTE: If price is being set dynamically, this will be inaccurate outside of default
 
     return {
       aggregate_pod_uptime: uptime.toString(),
