@@ -32,11 +32,12 @@ export default class PeerFinder {
         const res = await axios.post(peer + '/peers/discover', {
           peers: [ this.identity.getUri() ]
         })
+        log.debug('received %d peers from %s', res.data.peers.length, peer)
         this.peerDb.addPeers(res.data.peers)
           .catch(err => log.error(err))
       } catch (err) {
+        log.error('%s for %s. Removing...', err, peer)
         this.peerDb.removePeer(peer)
-        log.error(err)
       }
     }
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)

@@ -48,22 +48,23 @@ export default class PeerDatabase {
       if (peer === this.identity.getUri()) {
         continue
       }
-      try {
-        // Check for invalid peer addresses. Validate peer only if not in set.
-        if (!this.peers.has(peer) && shallowValidatePeer(peer)) {
+      // Check for invalid peer addresses. Validate peer only if not in set.
+      if (!this.peers.has(peer) && shallowValidatePeer(peer)) {
+        try {
           const peerInfo = await axios.get(peer + '/info')
           if (peer === peerInfo.data.uri) {
             this.memoryMap.set(peer, peerInfo.data.fullMem)
             this.peers.add(peer)
           }
-        }
-
-      } catch (e) {
-        if (process.env.NODE_ENV !== 'test') {
-	        log.error('%s for %s', e, peer + '/info')
+        } catch (e) {
+          if (process.env.NODE_ENV !== 'test') {
+            log.debug('%s for %s', e, peer + '/info')
+          }
+          if (e.response && e.response.status === 404) {
+            this.peers.add(peer)
+          }
         }
       }
-
     }
     if (this.peers.size > previousCount && process.env.NODE_ENV !== 'test') {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
