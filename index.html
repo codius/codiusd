@@ -5,8 +5,24 @@
   <p>For more information on Codius, visit <a href="https://codius.org">codius.org.</a></p>
   <table>
     <tr>
+      <td>Server URI: </td>
+      <td id="uri"></td>
+    </tr>
+    <tr>
       <td>Number of Peers: </td>
       <td id="numPeers"></td>
+    </tr>
+    <tr>
+      <td>Server Uptime: </td>
+      <td id="serverUptime"></td>
+    </tr>
+    <tr>
+      <td>Service Uptime: </td>
+      <td id="serviceUptime"></td>
+    </tr>
+    <tr>
+      <td>Average Load: </td>
+      <td id="avgLoad"></td>
     </tr>
     <tr>
       <td>Currencies Accepted: </td>
@@ -30,10 +46,13 @@
   	  .then(function(response){
         return response.json()
       })
-      .then(function(myJson) {
-        console.log(myJson)
-        for(var item in myJson) {
-          document.getElementById(item).append(myJson[item])
+      .then(function(jsonData) {
+        for(var item in jsonData) {
+          try {
+            document.getElementById(item).append(jsonData[item])
+          } catch (e) {
+            console.error('could not append data: ', e)
+          }
         }
       })
   </script>
