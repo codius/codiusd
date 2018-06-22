@@ -4,6 +4,7 @@ import Config from './Config'
 import PodManager from './PodManager'
 import PeerFinder from './PeerFinder'
 import HttpServer from './HttpServer'
+import AdminServer from './AdminServer'
 import BackgroundValidatePeers from './BackgroundValidatePeers'
 import Secret from './Secret'
 import Money from './Money'
@@ -15,6 +16,7 @@ export default class App {
   private config: Config
   private peerFinder: PeerFinder
   private httpServer: HttpServer
+  private adminServer: AdminServer
   private podManager: PodManager
   private secret: Secret
   private money: Money
@@ -27,6 +29,7 @@ export default class App {
 
     this.peerFinder = deps(PeerFinder)
     this.httpServer = deps(HttpServer)
+    this.adminServer = deps(AdminServer)
     this.podManager = deps(PodManager)
     this.secret = deps(Secret)
     this.money = deps(Money)
@@ -40,6 +43,9 @@ export default class App {
       await this.money.start()
     }
     await this.httpServer.start()
+    if (this.config.adminApi) {
+      await this.adminServer.start()
+    }
     this.peerFinder.start()
     this.podManager.start()
     this.backgroundValidatePeers.start()

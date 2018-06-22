@@ -2,6 +2,7 @@ import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import { PodInfo } from '../schemas/PodInfo'
 import CodiusDB from '../util/CodiusDB'
+import BigNumber from 'bignumber.js'
 import { create as createLogger } from '../common/log'
 const log = createLogger('PodDatabase')
 
@@ -96,11 +97,16 @@ export default class PodDatabase {
   }
 
   public async addPod (params: AddPodParams) {
+    const existing = this.pods.get(params.id)
+    const uptime = ((existing && existing.totalUptime) || 0) + Number(params.duration)
+
     const info: PodInfo = {
       id: params.id,
       running: params.running,
+      start: new Date().toISOString(),
       expiry: addDuration(params.duration),
-      memory: params.memory
+      memory: params.memory,
+      totalUptime: uptime
     }
 
     this.pods.set(info.id, info)
@@ -112,6 +118,17 @@ export default class PodDatabase {
       `duration=${params.duration} ` +
       `expiry=${info.expiry} ` +
       `memory=${info.memory} `)
+  }
+
+  public getLifetimePodsUptime (): BigNumber {
+    let lifetimeUp = 0
+    for (const value of this.pods.values()) {
+      if (value.totalUptime) {
+        lifetimeUp += Number(value.totalUptime)
+      }
+    }
+
+    return new BigNumber(lifetimeUp)
   }
 
   private async loadPodsFromDB () {
