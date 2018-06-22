@@ -69,6 +69,9 @@ jobs:
 
       - run: mv npmrc-env .npmrc
 
+      # we need to install dependencies in order to publish
+      - run: npm install
+
       - run:
           name: Publish to NPM (only if a new version has been tagged)
           command: if [ "$(npm show codiusd version)" != "$(npm ls --depth=-1 2>/dev/null | head -1 | cut -f 1 -d " " | cut -f 2 -d @)" ] ; then npm publish ; fi
