@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/codius/codiusd#readme",
   "dependencies": {
-    "@sharafian/cog": "0.0.4",
+    "@sharafian/cog": "0.0.5",
     "@types/inert": "^5.1.1",
     "axios": "^0.18.0",
     "bignumber.js": "^7.2.1",
