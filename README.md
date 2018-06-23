@@ -62,9 +62,9 @@ sudo npm install -g codiusd
 ```
 ### Environment Variables
 
-#### CODIUS_XRP_PER_MONTH
+#### CODIUS_COST_PER_MONTH
 * Type: Integer
-* Description: A monhtly rate the host charges (in XRP) to host a program. `Codiusd` calculates this value down to the rate per second, as uploads are given a time in seconds to be hosted for.
+* Description: A monthly rate the host charges (in XRP) to host a program. `Codiusd` calculates this value down to the rate per second, as uploads are given a time in seconds to be hosted for.
 * Default: 10
 
 #### CODIUS_HYPER_SOCKET
