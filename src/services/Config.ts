@@ -52,7 +52,7 @@ export default class Config {
     this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
-    this.hostCostPerMonth = Number(env.COST_PER_MONTH) || 10
+    this.hostCostPerMonth = Number(env.CODIUS_XRP_PER_MONTH) || 10
 
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
