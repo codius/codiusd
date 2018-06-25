@@ -17,7 +17,7 @@ describe('Host info API testing', () => {
       }
     })
   })
-  it('Validates info api', done => {
+  it('Validates info endpoint', done => {
     const request = {
       method: 'GET',
       url: '/info'
@@ -26,9 +26,25 @@ describe('Host info API testing', () => {
       server.inject(request).then(response => {
         const res = JSON.parse(response.payload)
         assert.isOk(res, 'Returns object')
+        assert.hasAllKeys(res, ['fullMem', 'acceptingUploads', 'serverUptime', 'serviceUptime', 'avgLoad', 'numPeers', 'currency', 'costPerMonth', 'uri', 'runningContracts'])
         done()
       }).catch(err => {
         console.log('error message: ', err)
+      })
+    }
+  })
+
+  it('Validates memory endpoint', done => {
+    const request = {
+      method: 'GET',
+      url: '/memory'
+    }
+    if (server) {
+      server.inject(request).then(response => {
+        const res = JSON.parse(response.payload)
+        assert.isOk(res, 'Returns object')
+        assert.hasAnyKeys(res, ['freeMem'])
+        done()
       })
     }
   })
