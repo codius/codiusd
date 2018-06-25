@@ -6,6 +6,7 @@
 
 export interface HostInfo {
   fullMem: boolean;
+  acceptingUploads: boolean;
   serverUptime?: number;
   serviceUptime?: number;
   avgLoad?: number;
