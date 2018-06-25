@@ -25,7 +25,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
     const infoResp: HostInfo = {
       fullMem,
-      acceptingUploads: fullMem,
+      acceptingUploads: !fullMem,
       serverUptime: os.uptime(),
       serviceUptime: process.uptime(),
       avgLoad: os.loadavg()[0],
