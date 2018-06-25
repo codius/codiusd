@@ -15,10 +15,17 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   const config = deps(Config)
 
+  async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return {
+      freeMem: (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
+    }
+  }
+
   async function infoHandler (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
     const infoResp: HostInfo = {
       fullMem,
+      acceptingUploads: fullMem,
       serverUptime: os.uptime(),
       serviceUptime: process.uptime(),
       avgLoad: os.loadavg()[0],
@@ -42,5 +49,11 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'get',
     path: '/info',
     handler: infoHandler
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/memory',
+    handler: getMemory
   })
 }

@@ -9,6 +9,18 @@ const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.tinypolarbear.com'
 ]
 
+function setPrice () {
+
+  if (process.env.CODIUS_COST_PER_MONTH) {
+    return Number(process.env.CODIUS_COST_PER_MONTH)
+  } else if (process.env.COST_PER_MONTH) {
+    return Number(process.env.COST_PER_MONTH)
+  } else if (process.env.CODIUS_XRP_PER_MONTH) {
+    return Number(process.env.CODIUS_XRP_PER_MONTH)
+  }
+  return 10
+}
+
 export default class Config {
   readonly hyperSock: string
   readonly noop: boolean
@@ -52,7 +64,7 @@ export default class Config {
     this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
-    this.hostCostPerMonth = Number(env.CODIUS_COST_PER_MONTH) || 10
+    this.hostCostPerMonth = setPrice()
 
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
