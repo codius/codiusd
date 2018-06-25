@@ -9,6 +9,7 @@
 /test/**/*.js.map
 /test/**/*.d.ts
 #/src/schemas/*.ts
+!/test/config/*.ts
 !wallaby.js
 /parallel-2018522*
 /secret
