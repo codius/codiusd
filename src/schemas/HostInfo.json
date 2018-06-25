@@ -4,6 +4,9 @@
       "fullMem": {
           "type": "boolean"
       },
+      "acceptingUploads": {
+          "type": "boolean"
+      },
       "serverUptime": {
           "type": "number"
       },
@@ -35,6 +38,6 @@
            }
       }
   },
-  "required": [ "fullMem", "numPeers", "currency", "costPerMonth", "uri" ],
+  "required": [ "fullMem", "acceptingUploads", "numPeers", "currency", "costPerMonth", "uri" ],
   "additionalProperties": false
 }
