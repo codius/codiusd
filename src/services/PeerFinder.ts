@@ -34,7 +34,7 @@ export default class PeerFinder {
         })
         log.trace('received %d peers from %s', res.data.peers.length, peer)
         this.peerDb.addPeers(res.data.peers)
-          .catch(err => log.error(err))
+          .catch(err => log.debug(err))
       } catch (err) {
         log.debug('%s for %s. Removing...', err, peer)
         this.peerDb.removePeer(peer)
