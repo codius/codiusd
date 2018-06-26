@@ -47,16 +47,24 @@ export default class Config {
       env = process.env
     }
 
+    this.devMode = env.CODIUS_DEV === 'true'
+
+    this.port = Number(env.CODIUS_PORT) || 3000
+    if (env.CODIUS_PUBLIC_URI) {
+      this.publicUri = env.CODIUS_PUBLIC_URI
+    } else if (this.devMode || env.NODE_ENV === 'test') {
+      this.publicUri = ('http://local.codius.org:' + this.port)
+    } else {
+      throw new Error('Codiusd requires CODIUS_PUBLIC_URI to be set')
+    }
+
     this.ilpPlugin = env.ILP_PLUGIN
     this.ilpCredentials = env.ILP_CREDENTIALS
     this.hyperSock = env.CODIUS_HYPER_SOCKET || '/var/run/hyper.sock'
     this.noop = env.CODIUS_HYPER_NOOP === 'true'
-    this.port = Number(env.CODIUS_PORT) || 3000
     this.bindIp = env.CODIUS_BIND_IP || '127.0.0.1'
-    this.publicUri = env.CODIUS_PUBLIC_URI || ('http://local.codius.org:' + this.port)
     this.codiusRoot = env.CODIUS_ROOT || '/var/lib/codius'
     this.memdownPersist = env.CODIUS_MEMDOWN_PERSIST === 'true'
-    this.devMode = env.CODIUS_DEV === 'true'
     this.bootstrapPeers = env.CODIUS_BOOTSTRAP_PEERS
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : DEFAULT_BOOTSTRAP_PEERS
