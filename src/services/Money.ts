@@ -48,6 +48,8 @@ export default class Money {
           plugin,
           assetCode: info.assetCode,
           assetScale: info.assetScale,
+          sendRoutes: false,
+          receiveRoutes: false,
           options
         },
         child: {
