@@ -73,13 +73,13 @@ export default class Money {
   }
 
   async establishNetwork () {
-    log.debug('creating codius0 bridge device')
+    log.trace('creating codius0 bridge device')
     await spawn('ip', 'link add name codius0 type bridge'.split(' '))
 
-    log.debug('bringing up codius0 bridge device')
+    log.trace('bringing up codius0 bridge device')
     await spawn('ip', 'link set codius0 up'.split(' '))
 
-    log.debug('assigning addr to codius0. ip=169.254.77.68')
+    log.trace('assigning addr to codius0. ip=169.254.77.68')
     await spawn('ip', 'addr add dev codius0 169.254.77.68'.split(' '))
   }
 }
