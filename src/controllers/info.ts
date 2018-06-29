@@ -39,11 +39,10 @@ export default function (server: Hapi.Server, deps: Injector) {
       costPerMonth: config.hostCostPerMonth,
       uri: request.server.info.uri
     }
-    const hapiQuery = JSON.parse(JSON.stringify(request.query))
     if (config.showAdditionalHostInfo) {
       infoResp.runningContracts = podDatabase.getRunningPods().length
       // TODO: add other relevant information like number of running pods, average uptime per pod...
-      if (hapiQuery && hapiQuery.requestPeers === 'true') {
+      if (request.query && request.query['requestPeers'] === 'true') {
         infoResp.peers = peerDb.getAllPeers()
       }
     }
