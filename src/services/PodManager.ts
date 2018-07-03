@@ -6,6 +6,8 @@ import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
 import ManifestDatabase from './ManifestDatabase'
 import { checkMemory } from '../util/podResourceCheck'
+import { Transform, PassThrough } from 'stream'
+import * as multi from 'multi-read-stream'
 import {
   block,
   onForward,
@@ -96,7 +98,7 @@ export default class PodManager {
   async startPod (podSpec: PodSpec, duration: string, port?: string) {
     if (this.pods.getPod(podSpec.id)) {
       const isRunning = await this.hyperClient.getPodInfo(podSpec.id)
-        .then((info) => true)
+        .then(info => !!info)
         .catch(() => false)
       if (isRunning) {
         await this.pods.addDurationToPod(podSpec.id, duration)
@@ -120,6 +122,40 @@ export default class PodManager {
 
     const ip = await this.hyper.getPodIP(podSpec.id)
     await this.pods.setPodIP(podSpec.id, ip)
+  }
+
+  async getLogStream (podId: string, follow: boolean = false) {
+    const { spec: { containers } } = await this.hyperClient.getPodInfo(podId)
+
+    const stdStreams = {
+      1: 'stdout',
+      2: 'stderr'
+    }
+
+    const streams = await Promise.all(containers.map(async container => {
+      const stream = await this.hyperClient.getLog(container.containerID, follow)
+      const transform = new Transform({
+        transform (chunk: Buffer, encoding: string, callback: Function) {
+          const streamName = stdStreams[chunk[0]] || chunk[0]
+          const containerName = container.name.substring(container.name.indexOf('_') + 1)
+          const logData = chunk.slice(8)
+          const logLine = `${containerName} ${streamName} ${logData.toString()}`
+          callback(null, logLine)
+        }
+      })
+      stream.pipe(transform)
+      return transform
+    }))
+
+    if (follow) {
+      const pingStream = new PassThrough()
+      let pingInterval = setInterval(() => pingStream.push('ping\n'), 1000)
+      pingStream.on('end', () => clearInterval(pingInterval))
+
+      streams.push(pingStream)
+    }
+
+    return multi(streams)
   }
 
   private async protectNetwork () {

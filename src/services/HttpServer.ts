@@ -25,7 +25,16 @@ export default class HttpServer {
     this.server = new Hapi.Server({
       uri: this.config.publicUri.replace(/\/+$/, ''),
       address: this.config.bindIp,
-      port: this.config.port
+      port: this.config.port,
+      mime: {
+        override: {
+          // Streaming responses shouldn't get buffered so for simplicity we'll
+          // just turn off compression for them.
+          'application/vnd.codius.raw-stream': {
+            compressible: false
+          }
+        }
+      }
     })
 
     registerVersionController(this.server, deps)

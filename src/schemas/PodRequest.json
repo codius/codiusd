@@ -66,6 +66,9 @@
             "required": [ "value" ],
             "additionalProperties": false
           }
+        },
+        "debug": {
+          "type": "boolean"
         }
       },
       "required": [ "name", "version", "containers" ],

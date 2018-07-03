@@ -24,4 +24,5 @@ export interface Manifest {
       value: string;
     };
   };
+  debug?: boolean;
 }

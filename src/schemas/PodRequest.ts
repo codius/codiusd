@@ -25,6 +25,7 @@ export interface PodRequest {
         value: string;
       };
     };
+    debug?: boolean;
   };
   private?: {
     vars?: {
