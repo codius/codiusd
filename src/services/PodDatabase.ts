@@ -77,7 +77,7 @@ export default class PodDatabase {
     info.ip = ip
     await this.codiusdb.savePods(Array.from(this.pods.values()))
 
-    log.debug('set pod ip. ' +
+    log.trace('set pod ip. ' +
       `id=${id} ` +
       `ip=${ip}`)
   }
@@ -91,7 +91,7 @@ export default class PodDatabase {
     info.port = Number(port)
     await this.codiusdb.savePods(Array.from(this.pods.values()))
 
-    log.debug('set pod port. ' +
+    log.trace('set pod port. ' +
       `id=${id} ` +
       `port=${port}`)
   }
