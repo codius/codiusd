@@ -3,6 +3,8 @@ import * as Boom from 'boom'
 import Config from './Config'
 import { PodSpec } from '../schemas/PodSpec'
 import axios from 'axios'
+import { get, IncomingMessage } from 'http'
+import * as querystring from 'querystring'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('HyperClient')
@@ -13,12 +15,45 @@ export interface HyperPodInfoResponse {
   apiVersion: string
   vm: string
   createdAt: number
-  spec: object
+  spec: {
+    containers: {
+      args: string[],
+      containerID: string,
+      env: {
+        env: string,
+        value: string
+      }[],
+      image: string,
+      imageID: string,
+      name: string,
+      volumeMounts: {
+        mountPath: string,
+        name: string
+      },
+      workingDir: string
+    }[],
+    memory: number,
+    vcpu: number,
+    volumes: {
+      driver: string,
+      name: string,
+      source: string
+    }[]
+  },
   status: {
     phase: string
     hostIP: string
     podIP: string[]
-    containerStatus: object
+    containerStatus: {
+      containerID: string,
+      name: string,
+      phase: string,
+      running: {
+        startedAt: string
+      },
+      terminated: object,
+      waiting: object
+    }[]
   }
   podName: string
 }
@@ -73,6 +108,7 @@ export default class HyperClient {
 
   async createPod (podSpec: PodSpec): Promise<void> {
     if (this.config.noop) return
+    log.info('creating pod. id=%s', podSpec.id)
     const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
@@ -86,6 +122,7 @@ export default class HyperClient {
 
   async startPod (podId: string): Promise<void> {
     if (this.config.noop) return
+    log.info('starting pod. id=%s', podId)
     await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
@@ -105,6 +142,7 @@ export default class HyperClient {
 
   async deletePod (podId: string): Promise<void> {
     if (this.config.noop) return
+    log.info('deleting pod. id=%s', podId)
     const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'delete',
@@ -114,5 +152,34 @@ export default class HyperClient {
     if (res.data.Code !== 0) {
       throw Boom.serverUnavailable('Could not delete pod: hyper error code=' + res.data.Code)
     }
+  }
+
+  getLog (containerId: string, follow: boolean = false): Promise<IncomingMessage> {
+    log.info('attaching to container. containerId=%s', containerId)
+    return new Promise((resolve, reject) => {
+      const query = querystring.stringify({
+        container: containerId,
+        stdout: true,
+        stderr: true,
+        follow
+      })
+      const req = get({
+        socketPath: this.config.hyperSock,
+        method: 'GET',
+        path: '/container/logs?' + query
+      }, (res) => {
+        resolve(res)
+      })
+
+      req.on('error', (err) => {
+        log.error(
+          'failed to attach to container. containerId=%s error=%s',
+          containerId,
+          err.stack
+        )
+
+        reject(err)
+      })
+    })
   }
 }

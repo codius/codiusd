@@ -5,6 +5,7 @@
 /src/**/*.js
 /src/**/*.js.map
 /src/**/*.d.ts
+!/src/typings/*.d.ts
 /test/**/*.js
 /test/**/*.js.map
 /test/**/*.d.ts

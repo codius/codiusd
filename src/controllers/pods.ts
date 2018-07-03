@@ -87,7 +87,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
-      request.payload['private']
+      request.payload['private'] || {}
     )
 
     // throw error if memory usage exceeds available memory
@@ -179,6 +179,31 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
+  async function getPodLogs (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const podId = request.params['id']
+    const pod = podDatabase.getPod(podId)
+
+    if (!pod) {
+      throw Boom.notFound(`no pod found with this id. id=${podId}`)
+    }
+
+    const manifest = await manifestDatabase.getManifest(podId)
+
+    if (!manifest || !manifest.debug) {
+      throw Boom.forbidden(`pod manifest does not allow debugging. id=${podId}`)
+    }
+
+    const stream = await podManager.getLogStream(podId, request.query['follow'] === 'true')
+
+    return h
+      .response(stream)
+      .type('text/event-stream')
+      // This mime type is set in our server options to disable compression
+      .header('Content-Type', 'application/vnd.codius.raw-stream')
+      .header('Connection', 'keep-alive')
+      .header('Cache-Control', 'no-cache')
+  }
+
   server.route({
     method: 'OPTIONS',
     path: '/pods',
@@ -237,5 +262,11 @@ export default function (server: Hapi.Server, deps: Injector) {
         output: 'data'
       }
     }
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/pods/{id}/logs',
+    handler: getPodLogs
   })
 }
