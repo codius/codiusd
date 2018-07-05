@@ -3,8 +3,7 @@ import { Injector } from 'reduct'
 import PodDatabase from '../services/PodDatabase'
 import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
-import * as os from 'os'
-import * as process from 'process'
+import { freeMem, serverInfo } from '../util/freeMemory'
 import Config from '../services/Config'
 import { HostInfo } from '../schemas/HostInfo'
 
@@ -15,30 +14,14 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   const config = deps(Config)
 
-  function freeMem () {
-    return (os.totalmem() * config.maxMemoryFraction) - podManager.getMemoryUsed()
-  }
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
-      freeMem: freeMem()
+      freeMem: freeMem(config, podManager)
     }
   }
 
   async function infoHandler (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
-    const serverFreeMemory = freeMem()
-    const infoResp: HostInfo = {
-      fullMem,
-      acceptingUploads: !fullMem,
-      serverFreeMemory,
-      serverUptime: os.uptime(),
-      serviceUptime: process.uptime(),
-      avgLoad: os.loadavg()[0],
-      numPeers: peerDb.getNumPeers(),
-      currency: config.hostCurrency,
-      costPerMonth: config.hostCostPerMonth,
-      uri: request.server.info.uri
-    }
+    const infoResp: HostInfo = serverInfo(config, podManager, peerDb)
     if (config.showAdditionalHostInfo) {
       infoResp.runningContracts = podDatabase.getRunningPods().length
       // TODO: add other relevant information like number of running pods, average uptime per pod...
