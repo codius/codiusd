@@ -87,6 +87,16 @@ sudo npm install -g codiusd
 * Description: The public URI resolving to this instance of codiusd.
 * Default: `http://local.codius.org:CODIUS_PORT`
 
+#### CODIUS_MAX_MEMORY_FRACTION
+* Type: Integer
+* Description: Amount of memory to allocate to codiusd for hosting.
+* Default: 0.75
+
+#### CODIUS_ADDITIONAL_HOST_INFO
+* Type: Boolean
+* Description: Gives info about the host such as uptime, contracts currently running, monthly fee, etc. You can view this info at the /info endpoint, e.g. `codius.example.com/info`
+* Default: false
+
 #### CODIUS_BOOTSTRAP_PEERS
 * Type: JSON Array
 * Description: List of peers whose values are the URIs that resolve to their Codius instance.
