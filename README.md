@@ -88,7 +88,7 @@ sudo npm install -g codiusd
 * Default: `http://local.codius.org:CODIUS_PORT`
 
 #### CODIUS_MAX_MEMORY_FRACTION
-* Type: Integer
+* Type: Number
 * Description: Amount of memory to allocate to codiusd for hosting.
 * Default: 0.75
 
