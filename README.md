@@ -4,6 +4,9 @@
 [![NPM Package](https://img.shields.io/npm/v/codiusd.svg?style=flat)](https://npmjs.org/package/codiusd)
 [![CircleCI](https://circleci.com/gh/codius/codiusd.svg?style=shield)](https://circleci.com/gh/codius/codiusd)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Known Vulnerabilities](https://snyk.io/test/github/codius/codiusd/badge.svg?targetFile=package.json)](https://snyk.io/test/github/codius/codiusd?targetFile=package.json)
+[![Gitter chat](https://badges.gitter.im/codius/services.png)](https://gitter.im/codius/codius-chat)
+
 
 [Codius](https://codius.org) is an open-source decentralized hosting platform using [Interledger](https://interledger.org). It allows anyone to run software on servers all over the world and pay using any currency. Users package their software inside of [containers](https://www.docker.com/what-container). Multiple containers can run together inside of a [pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/).
 
@@ -86,6 +89,16 @@ sudo npm install -g codiusd
 * Type: String
 * Description: The public URI resolving to this instance of codiusd.
 * Default: `http://local.codius.org:CODIUS_PORT`
+
+#### CODIUS_MAX_MEMORY_FRACTION
+* Type: Number
+* Description: Amount of memory to allocate to codiusd for hosting.
+* Default: 0.75
+
+#### CODIUS_ADDITIONAL_HOST_INFO
+* Type: Boolean
+* Description: Gives info about the host such as uptime, contracts currently running, monthly fee, etc. You can view this info at the /info endpoint, e.g. `codius.example.com/info`
+* Default: false
 
 #### CODIUS_BOOTSTRAP_PEERS
 * Type: JSON Array

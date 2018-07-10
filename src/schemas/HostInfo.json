@@ -7,6 +7,9 @@
       "acceptingUploads": {
           "type": "boolean"
       },
+      "serverFreeMemory": {
+          "type": "number"
+      },
       "serverUptime": {
           "type": "number"
       },

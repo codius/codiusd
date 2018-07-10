@@ -44,7 +44,7 @@
   "dependencies": {
     "@sharafian/cog": "0.0.5",
     "@types/inert": "^5.1.1",
-    "axios": "^0.18.0",
+    "axios": "github:axios/axios#0b3db5d87a60a1ad8b0dce9669dbc10483ec33da",
     "bignumber.js": "^7.2.1",
     "canonical-json": "0.0.4",
     "debug": "^3.1.0",
@@ -56,7 +56,7 @@
     "http-proxy": "^1.17.0",
     "ilp-connector": "^21.3.2",
     "ilp-plugin": "^3.1.1",
-    "ilp-plugin-mini-balances": "^1.0.2",
+    "ilp-plugin-mini-balances": "^1.0.3",
     "ilp-protocol-ildcp": "^1.0.0",
     "inert": "^5.1.0",
     "leveldown": "^4.0.1",

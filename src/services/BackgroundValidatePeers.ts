@@ -17,7 +17,7 @@ export default class BackgroundValidatePeers {
   }
 
   private randomRunningCheck () {
-    log.debug('running Background check...')
+    log.trace('running Background check...')
     const db = this.peerDb
     if (db) {
       const peers = db.getAllPeers()
@@ -31,7 +31,7 @@ export default class BackgroundValidatePeers {
               db.removePeer(peer)
             }
           } catch (err) {
-            log.error(err)
+            log.debug(err)
           }
         }
       })

@@ -68,13 +68,13 @@ export default class PeerDatabase {
     }
     if (this.peers.size > previousCount && process.env.NODE_ENV !== 'test') {
       this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
-      log.debug('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
+      log.trace('added %s peers, now %s known peers', this.peers.size - previousCount, this.peers.size)
     }
   }
   public removePeer (peer: string) {
     this.peers.delete(peer)
     this.codiusdb.savePeers([...this.peers]).catch(err => log.error(err))
-    log.debug('removed peer %s, now %s peers', peer, this.peers.size)
+    log.trace('removed peer %s, now %s peers', peer, this.peers.size)
   }
 
   public getNumPeers () {
