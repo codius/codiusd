@@ -46,7 +46,7 @@
     "@sharafian/cog": "0.0.5",
     "@types/handlebars": "^4.0.38",
     "@types/inert": "^5.1.1",
-    "axios": "github:axios/axios#0b3db5d87a60a1ad8b0dce9669dbc10483ec33da",
+    "axios": "^0.18.0",
     "@types/vision": "^5.3.4",
     "bignumber.js": "^7.2.1",
     "canonical-json": "0.0.4",
