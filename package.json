@@ -55,6 +55,7 @@
     "hapi": "^17.4.0",
     "http-proxy": "^1.17.0",
     "ilp-connector": "^21.3.2",
+    "ilp-fetch": "^1.3.7",
     "ilp-plugin": "^3.1.1",
     "ilp-plugin-mini-balances": "^1.0.3",
     "ilp-protocol-ildcp": "^1.0.0",
@@ -67,7 +68,8 @@
     "riverpig": "^1.1.3",
     "thirty-two": "^1.0.2",
     "through2": "^2.0.3",
-    "whatwg-fetch": "^2.0.4"
+    "whatwg-fetch": "^2.0.4",
+    "ws": "^5.2.1"
   },
   "devDependencies": {
     "@types/boom": "^7.2.0",
