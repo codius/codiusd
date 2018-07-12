@@ -6,11 +6,13 @@ import leveldown from 'leveldown'
 import memdown from 'memdown'
 import encode from 'encoding-down'
 import { Injector } from 'reduct'
+import BigNumber from 'bignumber.js'
 import Config from '../services/Config'
 
 const PEERS_KEY = 'codiusPeers'
 const PODS_KEY = 'codiusPods'
 const MANIFEST_KEY = 'codiusManifests'
+const PROFIT_KEY = 'codiusProfit'
 
 export default class CodiusDB {
   private config: Config
@@ -67,12 +69,26 @@ export default class CodiusDB {
     await this.delete(PEERS_KEY)
   }
 
+  async getProfit (): Promise<BigNumber> {
+    const profit = await this.loadValue(PROFIT_KEY, new BigNumber(0))
+    return new BigNumber(profit)
+  }
+
+  async setProfit (_profit: BigNumber.Value): Promise<void> {
+    const profit = new BigNumber(_profit)
+    await this.saveValue(PROFIT_KEY, profit.toString())
+  }
+
+  async deleteProfit (): Promise<void> {
+    await this.delete(PROFIT_KEY)
+  }
+
   // Save and Load serialized values
   async saveValue (key: string, value: {}) {
     const existing = await this.get(key)
     if (existing) {
       if (typeof existing !== typeof value) {
-        throw TypeError
+        throw new TypeError('CodiusDB#saveValue unexpected existing type for key=' + key)
       }
       await this.delete(key)
     }

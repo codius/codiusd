@@ -1,9 +1,11 @@
 import * as Hapi from 'hapi'
+import * as Boom from 'boom'
 import Config from '../services/Config'
 import PodDatabase from '../services/PodDatabase'
+import CodiusDB from '../util/CodiusDB'
 import { Injector } from 'reduct'
-import { getCurrencyPerSecond } from '../util/priceRate'
-import BigNumber from 'bignumber.js'
+const Enjoi = require('enjoi')
+const ConfigUpdate = require('../schemas/ConfigUpdate.json')
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('admin')
@@ -11,6 +13,7 @@ const log = createLogger('admin')
 export default function (server: Hapi.Server, deps: Injector) {
   const podDatabase = deps(PodDatabase)
   const config = deps(Config)
+  const codiusdb = deps(CodiusDB)
 
   async function getAdminInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
@@ -31,14 +34,21 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
-    const profit = uptime.times(getCurrencyPerSecond(config).div(new BigNumber(10).pow(config.hostAssetScale)))
-    // NOTE: If price is being set dynamically, this will be inaccurate outside of default
+    const profitRaw = await codiusdb.getProfit()
+    const profit = profitRaw.shiftedBy(-config.hostAssetScale)
 
     return {
       aggregate_pod_uptime: uptime.toString(),
       aggregate_earnings: profit.toString(),
       currency: config.hostCurrency
     }
+  }
+
+  async function postConfig (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    if (request.payload['hostCostPerMonth']) {
+      config.hostCostPerMonth = request.payload['hostCostPerMonth']
+    }
+    return null
   }
 
   server.route({
@@ -63,5 +73,25 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'GET',
     path: '/getAllUptime',
     handler: getAllUptime
+  })
+
+  server.route({
+    method: 'POST',
+    path: '/config',
+    handler: postConfig,
+    options: {
+      validate: {
+        payload: Enjoi(ConfigUpdate),
+        failAction: async (req, h, err) => {
+          log.warn('/config validation error. error=' + (err && err.message))
+          throw Boom.badRequest('Invalid request payload')
+        }
+      },
+      payload: {
+        allow: 'application/json',
+        output: 'data'
+      },
+      response: { emptyStatusCode: 204 }
+    }
   })
 }
