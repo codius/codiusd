@@ -81,19 +81,51 @@ export default function (server: Hapi.Server, deps: Injector) {
     return duration
   }
 
-  // TODO: how to add plugin decorate functions to Hapi.Request type
-  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
+  async function streamPod (request: any, h: Hapi.ResponseToolkit) {
+    const res = request.raw.res
+    const streamer = setInterval(() => {
+      res.write(' ')
+    }, config.timeout)
+
+    let method
+    if (request.method === 'post') {
+      // throw error if memory usage exceeds available memory
+      const podSpec = manifestParser.manifestToPodSpec(
+        request.payload['manifest'],
+        request.payload['private'] || {}
+      )
+      if (checkIfHostFull(podSpec)) {
+        throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
+      }
+      method = postPod
+    } else if (method === 'put') {
+      method = extendPod
+    } else {
+      log.error('error uploading pod. error=Invalid method')
+      throw Boom.methodNotAllowed('Invalid method.')
+    }
+
     const duration = await chargeForDuration(request)
 
+    try {
+      const result = await method(request, duration)
+      clearInterval(streamer)
+      res.setHeader('Content-type', 'application/json')
+      res.end(JSON.stringify(result))
+    } catch (e) {
+      clearInterval(streamer)
+      log.error('error uploading pod. error=' + e.message)
+      throw Boom.badImplementation('Failed to upload pod.')
+    }
+
+    return h.abandon
+  }
+
+  async function postPod (request: any, duration: any) {
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private'] || {}
     )
-
-    // throw error if memory usage exceeds available memory
-    if (checkIfHostFull(podSpec)) {
-      throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
-    }
 
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
@@ -115,9 +147,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
-  async function extendPod (request: any, h: Hapi.ResponseToolkit) {
-    const duration = await chargeForDuration(request)
-
+  async function extendPod (request: any, duration: any) {
     const manifestHash = request.query['manifestHash']
     if (!manifestHash) {
       throw Boom.badData('manifestHash must be specified')
@@ -226,7 +256,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   server.route({
     method: 'PUT',
     path: '/pods',
-    handler: extendPod,
+    handler: streamPod,
     options: {
       validate: {
         payload: false
@@ -248,7 +278,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   server.route({
     method: 'POST',
     path: '/pods',
-    handler: postPod,
+    handler: streamPod,
     options: {
       validate: {
         payload: Enjoi(PodRequest),

@@ -38,6 +38,7 @@ export default class Config {
   readonly hostCurrency: string
   readonly hostAssetScale: number
   hostCostPerMonth: number
+  timeout: number
   readonly adminApi: boolean
   readonly adminPort: number
   readonly disableSelfTest: boolean
@@ -75,6 +76,8 @@ export default class Config {
     this.hostAssetScale = 6
     this.hostCostPerMonth = setPrice()
     this.disableSelfTest = env.CODIUS_DISABLE_SELF_TEST === 'true'
+    this.timeout = Number(env.CODIUS_HOST_TIMEOUT) || 10000
+
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
