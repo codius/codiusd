@@ -41,8 +41,6 @@ export default class HttpServer {
     await this.server.register(Inert)
     await this.server.register(Vision)
 
-    console.log(__dirname)
-
     this.server.views({
       engines: {
         html: Handlebars

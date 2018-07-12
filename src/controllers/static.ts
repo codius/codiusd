@@ -1,6 +1,6 @@
 import * as Hapi from 'hapi'
 import { Injector } from 'reduct'
-import { serverInfo } from '../util/freeMemory'
+import { serverInfo } from '../util/serverInfo'
 import PeerDatabase from '../services/PeerDatabase'
 import PodManager from '../services/PodManager'
 import Config from '../services/Config'

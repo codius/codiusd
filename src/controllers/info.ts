@@ -3,7 +3,7 @@ import { Injector } from 'reduct'
 import PodDatabase from '../services/PodDatabase'
 import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
-import { freeMem, serverInfo } from '../util/freeMemory'
+import { freeMem, serverInfo } from '../util/serverInfo'
 import Config from '../services/Config'
 import { HostInfo } from '../schemas/HostInfo'
 
