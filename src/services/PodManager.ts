@@ -110,15 +110,16 @@ export default class PodManager {
       duration,
       memory: checkMemory(podSpec.resource)
     })
-
+    log.debug('POD ADDED')
     // TODO: validate regex on port arg incoming
     if (port && Number(port) > 0) {
       await this.pods.setPodPort(podSpec.id, port)
     }
-
+    log.debug('running pod')
     await this.hyperClient.runPod(podSpec)
-
+    log.debug('POD RUN')
     const ip = await this.hyper.getPodIP(podSpec.id)
+    log.debug('ip pod', ip)
     await this.pods.setPodIP(podSpec.id, ip)
   }
 

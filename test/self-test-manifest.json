@@ -1,13 +1,13 @@
 {
     "manifest": {
-      "name": "Codius Test",
+      "name": "Codius Test 1",
       "version": "1.0.0",
       "machine": "small",
       "port": "80",
       "containers": [
         {
           "id": "codius-test",
-          "image": "androswong418/codius-test-image@sha256:2ac5daaa973384203f206cc636d0a59c311f494215a2203f4a102d49289914e0",
+          "image": "androswong418/codius-image-test@sha256:2ac5daaa973384203f206cc636d0a59c311f494215a2203f4a102d49289914e0",
           "environment": {
             "PORT": "$PORT",
             "WEB_SOCKET": "$WEB_SOCKET"
@@ -26,5 +26,6 @@
           "value": "3001"
         }
       }
-    }
+    },
+    "private": {}
   }

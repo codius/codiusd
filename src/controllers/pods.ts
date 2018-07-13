@@ -55,6 +55,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
 
     const stream = request.ilpStream()
+    log.debug('Streaming here')
     try {
       await stream.receiveTotal(price)
     } catch (e) {
@@ -62,14 +63,14 @@ export default function (server: Hapi.Server, deps: Injector) {
       log.error('error receiving payment. error=' + e.message)
       throw Boom.paymentRequired('Failed to get payment before timeout')
     }
-
+    log.debug('Finished receiving STREAM payments')
     return duration
   }
 
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     const duration = await chargeForDuration(request)
-
+    log.debug('GOT IN HERE', request.payload)
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private']
@@ -79,20 +80,20 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (checkIfHostFull(podSpec)) {
       throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
     }
-
+    log.debug('check 0', podSpec, duration, request.payload['manifest']['port'])
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
-
+    log.debug('added pod right?!')
     await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
-
+    log.debug('check 1')
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
-
+    log.debug('check2', podInfo)
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${podSpec.id}`)
     }
-
+    log.debug('final check', podInfo.id)
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,

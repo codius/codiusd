@@ -72,16 +72,25 @@ export default class HyperClient {
   }
 
   async createPod (podSpec: PodSpec): Promise<void> {
+  
     if (this.config.noop) return
-    const res = await axios.request({
-      socketPath: this.config.hyperSock,
-      method: 'post',
-      url: '/pod/create',
-      data: podSpec
-    })
-    if (res.data.Code !== 0) {
-      throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
+    
+    try {
+      const res = await axios.request({
+        socketPath: this.config.hyperSock,
+        method: 'post',
+        url: '/pod/create',
+        data: podSpec
+      })
+      if (res.data.Code !== 0) {
+        throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
+      }
+    } catch (err) {
+      log.debug('pod creation error:', err)
     }
+
+
+   
   }
 
   async startPod (podId: string): Promise<void> {
@@ -98,8 +107,11 @@ export default class HyperClient {
     await this.createPod(podSpec).catch(async (err) => {
       log.warn(`pulling images after error="${err.message}"`)
       await this.pullImages(podSpec)
+
       await this.createPod(podSpec)
+
     })
+
     await this.startPod(podSpec.id)
   }
 
