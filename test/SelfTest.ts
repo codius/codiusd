@@ -23,7 +23,7 @@ export default class SelfTest {
           Accept: `application/codius-v1+json`,
           'Content-Type': 'application/json'
         },
-        maxPrice: '1142',
+        maxPrice: (this.config.hostCostPerMonth * 1000000).toString(),
         method: 'POST',
         body: JSON.stringify(manifestJson),
         timeout: 70000 // 1m10s
@@ -33,32 +33,25 @@ export default class SelfTest {
         // Maybe check status in 30 seconds interval twice.
         response = await response.json()
         const url = new URL(this.config.publicUri)
-	log.debug('we in here', response)
         const webSocketPromise = new Promise(resolve => {
-          log.debug('websock', `wss://${response.manifestHash}.${url.host}/websockets`)
           const ws = new WebSocket(`wss://${response.manifestHash}.${url.host}/websockets`)
-          try {
           ws.on('open', () => {
             log.debug('Connection went through!')
           })
+
           ws.on('message', (message: string) => {
-            // resolve message if websocketEnabled is true.
-            log.debug('Aanything')
             let finalMessage = JSON.parse(message)
             if (finalMessage.websocketEnabled) {
               resolve()
             }
           })
-          ws.on('error', err => {
-            log.debug('error!', err)
-          }
-          } catch (err){
-            log.debug('Error for websockets', err)
-          }   
+
+          ws.on('error', (err: any) => {
+            log.debug('Error on connection', err)
+          })
         })
 
         const serverPromise = new Promise(async resolve => {
-          
           const serverRes = await axios.get(`https://${response.manifestHash}.${url.host}/server`)
           const serverCheck = serverRes.data
           log.debug('serverProm', serverCheck)
@@ -80,7 +73,6 @@ export default class SelfTest {
               })
             ])
           }, 10000)
- 
         } catch (e) {
           log.debug('Server or web socket Error', e)
         }

@@ -72,9 +72,7 @@ export default class HyperClient {
   }
 
   async createPod (podSpec: PodSpec): Promise<void> {
-  
     if (this.config.noop) return
-    
     try {
       const res = await axios.request({
         socketPath: this.config.hyperSock,
@@ -88,9 +86,6 @@ export default class HyperClient {
     } catch (err) {
       log.debug('pod creation error:', err)
     }
-
-
-   
   }
 
   async startPod (podId: string): Promise<void> {

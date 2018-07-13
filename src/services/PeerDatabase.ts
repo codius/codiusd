@@ -58,7 +58,7 @@ export default class PeerDatabase {
           }
         } catch (e) {
           if (process.env.NODE_ENV !== 'test') {
-            //log.debug('%s for %s', e, peer + '/info')
+            log.debug('%s for %s', e, peer + '/info')
           }
           if (e.response && e.response.status === 404) {
             this.peers.add(peer)

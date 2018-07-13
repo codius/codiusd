@@ -47,7 +47,7 @@ export default class App {
     await this.httpServer.start()
     if (this.config.adminApi) {
       await this.adminServer.start()
-    } 
+    }
     this.peerFinder.start()
     this.podManager.start()
     this.backgroundValidatePeers.start()
