@@ -13,11 +13,15 @@ export default class SelfTest {
     this.config = deps(Config)
   }
 
-  async start () {
+  start () {
+    this.run()
+      .catch(err => log.error(err))
+  }
+
+  async run () {
     const duration = 300
     const host = this.config.publicUri
     try {
-      log.debug('manifest', manifestJson)
       let response = await ilpFetch(`${host}/pods?duration=${duration}`, {
         headers: {
           Accept: `application/codius-v1+json`,
@@ -71,33 +75,30 @@ export default class SelfTest {
           }
         })
         const testPromises = await Promise.all([serverPromise, webSocketPromise])
-        try {
           // Test that none of these promises are hanging for more than 60 seconds
           // Timeout is set so that the contract has time to be pulled.
-          setTimeout(() => {
-            Promise.race([
-              testPromises,
-              new Promise((resolve, reject) => {
-                let timeout = setTimeout(function () {
-                  clearTimeout(timeout)
-                  reject(new Error('Could not listen to server or websocket'))
-                }, 60000)
-              })
-            ])
-          }, 20000)
-        } catch (e) {
-          log.debug('Server or web socket Error', e)
-          if (!this.config.disableSelfTest) {
-            process.exit(1)
-          }
-        }
-
+        setTimeout(() => {
+          Promise.race([
+            testPromises,
+            new Promise((resolve, reject) => {
+              let timeout = setTimeout(function () {
+                clearTimeout(timeout)
+                reject(new Error('Could not listen to server or websocket'))
+              }, 60000)
+            })
+          ]).catch(err => {
+            log.error('Promise race err: ', err)
+            if (!this.config.disableSelfTest) {
+              process.exit(1)
+            }
+          })
+        }, 20000)
       } else {
         log.error(`Failed to upload contract due to: ${response.error}`)
         throw new Error(`Could not upload contract successfully due to: ${response.error}`)
       }
-    } catch (e) {
-      log.debug('Upload Error', e)
+    } catch (err) {
+      log.debug('Upload Error', err)
       if (!this.config.disableSelfTest) {
         process.exit(1)
       }
