@@ -7,6 +7,7 @@ const log = createLogger('SelfTest')
 const WebSocket = require('ws')
 const manifestJson = require('./self-test-manifest.json')
 const axios = require('axios')
+const crypto = require('crypto')
 export default class SelfTest {
   private config: Config
   constructor (deps: Injector) {
@@ -22,6 +23,9 @@ export default class SelfTest {
     const duration = 300
     const host = this.config.publicUri
     try {
+      const randomName = crypto.randomBytes(20).toString('hex')
+      manifestJson['manifest']['name'] = randomName
+      log.debug('manifestJson', manifestJson)
       let response = await ilpFetch(`${host}/pods?duration=${duration}`, {
         headers: {
           Accept: `application/codius-v1+json`,
@@ -37,6 +41,11 @@ export default class SelfTest {
         // Maybe check status in 30 seconds interval twice.
         response = await response.json()
         const url = new URL(this.config.publicUri)
+        await new Promise((resolve, reject) => {
+           let wait = setTimeout(() => {
+           resolve('Promise A win!');
+         }, 10000)
+        })
         const webSocketPromise = new Promise(resolve => {
           const ws = new WebSocket(`wss://${response.manifestHash}.${url.host}/websockets`)
           ws.on('open', () => {
@@ -76,8 +85,7 @@ export default class SelfTest {
         })
         const testPromises = await Promise.all([serverPromise, webSocketPromise])
           // Test that none of these promises are hanging for more than 60 seconds
-          // Timeout is set so that the contract has time to be pulled.
-        setTimeout(() => {
+          // Timeout is set so that the contract has time to be pulled. 
           Promise.race([
             testPromises,
             new Promise((resolve, reject) => {
@@ -92,7 +100,7 @@ export default class SelfTest {
               process.exit(1)
             }
           })
-        }, 20000)
+        
       } else {
         log.error(`Failed to upload contract due to: ${response.error}`)
         throw new Error(`Could not upload contract successfully due to: ${response.error}`)
