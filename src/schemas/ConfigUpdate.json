@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "hostCostPerMonth": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

@@ -37,7 +37,7 @@ export default class Config {
   readonly showAdditionalHostInfo: boolean
   readonly hostCurrency: string
   readonly hostAssetScale: number
-  readonly hostCostPerMonth: number
+  hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
   readonly disableSelfTest: boolean

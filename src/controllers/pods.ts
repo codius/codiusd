@@ -10,6 +10,7 @@ import { checkMemory } from '../util/podResourceCheck'
 import { getCurrencyPerSecond } from '../util/priceRate'
 import PodDatabase from '../services/PodDatabase'
 import ManifestDatabase from '../services/ManifestDatabase'
+import CodiusDB from '../util/CodiusDB'
 import ManifestParser from '../services/ManifestParser'
 import os = require('os')
 const Enjoi = require('enjoi')
@@ -31,6 +32,8 @@ export default function (server: Hapi.Server, deps: Injector) {
   const manifestDatabase = deps(ManifestDatabase)
   const manifestParser = deps(ManifestParser)
   const config = deps(Config)
+  const codiusdb = deps(CodiusDB)
+  let profit: BigNumber | undefined
 
   function getPodUrl (manifestHash: string): string {
     const hostUrl = new URL(config.publicUri)
@@ -47,6 +50,14 @@ export default function (server: Hapi.Server, deps: Injector) {
     return false
   }
 
+  async function addProfit (amount: BigNumber.Value): Promise<void> {
+    if (profit === undefined) {
+      profit = await codiusdb.getProfit()
+    }
+    profit = profit.plus(amount)
+    await codiusdb.setProfit(profit)
+  }
+
   async function chargeForDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
 
@@ -61,6 +72,10 @@ export default function (server: Hapi.Server, deps: Injector) {
       // TODO: use logger module
       log.error('error receiving payment. error=' + e.message)
       throw Boom.paymentRequired('Failed to get payment before timeout')
+    } finally {
+      addProfit(stream.totalReceived).catch((err) => {
+        log.error('errors updating profit. error=' + err.message)
+      })
     }
     return duration
   }

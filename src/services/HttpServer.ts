@@ -7,6 +7,9 @@ import registerProxyController from '../controllers/proxy'
 import registerInfoController from '../controllers/info'
 import { Injector } from 'reduct'
 import * as Inert from 'inert'
+import * as Vision from 'vision'
+import * as Handlebars from 'handlebars'
+import * as path from 'path'
 import Config from './Config'
 const { HapiCog } = require('@sharafian/cog')
 
@@ -36,6 +39,16 @@ export default class HttpServer {
   async start () {
     await this.server.register({ plugin: require('h2o2') })
     await this.server.register(Inert)
+    await this.server.register(Vision)
+
+    this.server.views({
+      engines: {
+        html: Handlebars
+      },
+      relativeTo: path.resolve(__dirname, '../'),
+      path: 'templates'
+    })
+
     if (!this.config.devMode) {
       await this.server.register(HapiCog)
     }

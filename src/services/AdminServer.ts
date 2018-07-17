@@ -23,7 +23,7 @@ export default class AdminServer {
   async start () {
     await this.server.start()
 
-    log.info('Admin Server listening at %s', this.server.info.uri)
+    log.info('Admin Server listening at http://%s:%d', this.server.info.address, this.server.info.port)
   }
 
   getUrl () {
