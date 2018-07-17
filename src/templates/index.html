@@ -1,5 +1,5 @@
 <html>
-  <h2 id="header">Codius Host at </h2>
+  <h2 id="header">Codius Host v{{ version }} at {{ uri }}</h2>
   <p>This server is a Codius Host being run with <a href="https://github.com/codius/codiusd">codiusd.</a> If you want to upload a contract to this host, you may do so with the <a href="https://github.com/codius/codius">Codius CLI.</a></p>
   
   <p>For more information on Codius, visit <a href="https://codius.org">codius.org.</a></p>
@@ -33,12 +33,14 @@
       <td id="costPerMonth">{{ costPerMonth }}</td>
     </tr>
     <tr>
+      <td>Free Memory: </td>
+      <td id="memory">{{ freeMem }}</td>
+    </tr>
+    <tr>
       <td>Max Memory Used?</td>
       <td id="fullMem">{{ fullMem }}</td>
     </tr>
   </table>
   <p>Additional information about this Codius host can be found at these links:</p>
   <li><a href="/peers">Peers of this host (Random set of 1,000)</a></li>
-  <li><a href="/version">Current running version of Codius</a></li>
-  <li><a href="/memory">Amount of free memory this host has available</a></li>
 </html>
