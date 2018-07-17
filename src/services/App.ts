@@ -8,6 +8,7 @@ import AdminServer from './AdminServer'
 import BackgroundValidatePeers from './BackgroundValidatePeers'
 import Secret from './Secret'
 import Money from './Money'
+import SelfTest from './SelfTest'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('App')
@@ -21,7 +22,7 @@ export default class App {
   private secret: Secret
   private money: Money
   private backgroundValidatePeers: BackgroundValidatePeers
-
+  private selfTest: SelfTest
   constructor (deps: Injector) {
     this.config = deps(Config)
 
@@ -34,6 +35,7 @@ export default class App {
     this.secret = deps(Secret)
     this.money = deps(Money)
     this.backgroundValidatePeers = deps(BackgroundValidatePeers)
+    this.selfTest = deps(SelfTest)
   }
 
   async start () {
@@ -49,6 +51,7 @@ export default class App {
     this.peerFinder.start()
     this.podManager.start()
     this.backgroundValidatePeers.start()
+    this.selfTest.start()
   }
 
   private makeRootDir () {
