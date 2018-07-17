@@ -77,14 +77,12 @@ export default function (server: Hapi.Server, deps: Injector) {
         log.error('errors updating profit. error=' + err.message)
       })
     }
-
     return duration
   }
 
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     const duration = await chargeForDuration(request)
-
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private']
@@ -94,20 +92,15 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (checkIfHostFull(podSpec)) {
       throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
     }
-
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
-
     await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
-
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
-
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${podSpec.id}`)
     }
-
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,

@@ -98,8 +98,11 @@ export default class HyperClient {
     await this.createPod(podSpec).catch(async (err) => {
       log.warn(`pulling images after error="${err.message}"`)
       await this.pullImages(podSpec)
+
       await this.createPod(podSpec)
+
     })
+
     await this.startPod(podSpec.id)
   }
 
