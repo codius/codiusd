@@ -6,19 +6,23 @@ const ilpFetch = require('ilp-fetch')
 const log = createLogger('SelfTest')
 const WebSocket = require('ws')
 const manifestJson = require('./self-test-manifest.json')
-
+console.log('manifestJson', manifestJson)
 export default class SelfTest {
   private config: Config
   constructor (deps: Injector) {
     this.config = deps(Config)
   }
 
-  async start () {
+  start () {
+    this.run()
+      .catch(err => log.error(err))
+  }
+
+  async run () {
     const duration = 300
     const host = this.config.publicUri
     try {
-      log.debug('manifest', manifestJson)
-      const response = await ilpFetch(`${host}/pods?duration=${duration}`, {
+      let response = await ilpFetch(`${host}/pods?duration=${duration}`, {
         headers: {
           Accept: `application/codius-v1+json`,
           'Content-Type': 'application/json'
@@ -51,14 +55,15 @@ export default class SelfTest {
         const serverPromise = new Promise(async resolve => {
           const serverRes = await fetch(`https://${response.manifestHash}.${url.host}/server`)
           const serverCheck = await serverRes.json()
-          log.debug('serverProm', serverCheck)
           if (serverCheck.imageUploaded) {
             // resolve promise
             resolve()
           }
         })
-        const testPromises = await Promise.all([webSocketPromise, serverPromise])
-        try {
+        const testPromises = await Promise.all([serverPromise, webSocketPromise])
+          // Test that none of these promises are hanging for more than 60 seconds
+          // Timeout is set so that the contract has time to be pulled.
+        setTimeout(() => {
           Promise.race([
             testPromises,
             new Promise((resolve, reject) => {
@@ -67,16 +72,21 @@ export default class SelfTest {
                 reject(new Error('Could not listen to server or websocket'))
               }, 60000)
             })
-          ])
-        } catch (e) {
-          log.debug('Server or web socket Error', e)
-        }
-
+          ]).catch(err => {
+            log.error('Promise race err: ', err)
+            if (!this.config.disableSelfTest) {
+              process.exit(1)
+            }
+          })
+        }, 20000)
       } else {
         throw new Error(`Failed to upload contract due to: ${response.error}`)
       }
-    } catch (e) {
-      log.debug('Upload Error', e)
+    } catch (err) {
+      log.debug('Upload Error', err)
+      if (!this.config.disableSelfTest) {
+        process.exit(1)
+      }
     }
   }
 
