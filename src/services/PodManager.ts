@@ -110,14 +110,11 @@ export default class PodManager {
       duration,
       memory: checkMemory(podSpec.resource)
     })
-
     // TODO: validate regex on port arg incoming
     if (port && Number(port) > 0) {
       await this.pods.setPodPort(podSpec.id, port)
     }
-
     await this.hyperClient.runPod(podSpec)
-
     const ip = await this.hyper.getPodIP(podSpec.id)
     await this.pods.setPodIP(podSpec.id, ip)
   }
