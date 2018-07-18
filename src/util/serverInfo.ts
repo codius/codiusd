@@ -11,13 +11,14 @@ export function freeMem (config: Config, podManager: PodManager) {
 export function serverInfo (config: Config, podManager: PodManager, peerDb: PeerDatabase) {
   const fullMem = podManager.getMemoryUsed() * (2 ** 20) / os.totalmem() >= config.maxMemoryFraction
   const serverFreeMemory = freeMem(config, podManager)
+  const averageLoad = os.loadavg()[0] / os.cpus().length
   const infoResp = {
     fullMem,
     acceptingUploads: !fullMem,
     serverFreeMemory,
     serverUptime: os.uptime(),
     serviceUptime: process.uptime(),
-    avgLoad: os.loadavg()[0],
+    avgLoad: averageLoad,
     numPeers: peerDb.getNumPeers(),
     currency: config.hostCurrency,
     costPerMonth: config.hostCostPerMonth,
