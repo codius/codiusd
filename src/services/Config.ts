@@ -40,6 +40,7 @@ export default class Config {
   hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
+  readonly disableSelfTest: boolean
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
@@ -73,7 +74,7 @@ export default class Config {
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
     this.hostCostPerMonth = setPrice()
-
+    this.disableSelfTest = env.CODIUS_DISABLE_SELF_TEST === 'true'
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
