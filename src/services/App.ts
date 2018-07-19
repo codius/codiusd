@@ -51,7 +51,9 @@ export default class App {
     this.peerFinder.start()
     this.podManager.start()
     this.backgroundValidatePeers.start()
-    this.selfTest.start()
+    if (!this.config.disableSelfTest) {
+      this.selfTest.start()
+    }
   }
 
   private makeRootDir () {
