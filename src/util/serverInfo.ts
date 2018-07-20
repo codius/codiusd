@@ -22,7 +22,8 @@ export function serverInfo (config: Config, podManager: PodManager, peerDb: Peer
     numPeers: peerDb.getNumPeers(),
     currency: config.hostCurrency,
     costPerMonth: config.hostCostPerMonth,
-    uri: config.publicUri
+    uri: config.publicUri,
+    selfTestSuccess: config.selfTestSuccess
   }
 
   return infoResp

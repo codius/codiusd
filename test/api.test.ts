@@ -26,7 +26,7 @@ describe('Host info API testing', () => {
       server.inject(request).then(response => {
         const res = JSON.parse(response.payload)
         assert.isOk(res, 'Returns object')
-        assert.hasAllKeys(res, ['fullMem', 'acceptingUploads', 'serverFreeMemory', 'serverUptime', 'serviceUptime', 'avgLoad', 'numPeers', 'currency', 'costPerMonth', 'uri', 'runningContracts'])
+        assert.hasAllKeys(res, ['fullMem', 'acceptingUploads', 'serverFreeMemory', 'serverUptime', 'serviceUptime', 'avgLoad', 'numPeers', 'currency', 'costPerMonth', 'uri', 'runningContracts', 'selfTestSuccess'])
         done()
       }).catch(err => {
         console.log('error message: ', err)
