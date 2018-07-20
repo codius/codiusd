@@ -16,24 +16,24 @@ export class Logger {
     this.tracer = this.river.trace || debug(namespace + ':trace')
   }
 
-  info (...msg: any[]): void {
-    this.river.info(msg)
+  info (msg: any, ...elements: any[]): void {
+    this.river.info(msg, ...elements)
   }
 
-  warn (...msg: any[]): void {
-    this.river.warn(msg)
+  warn (msg: any, ...elements: any[]): void {
+    this.river.warn(msg, ...elements)
   }
 
-  error (...msg: any[]): void {
-    this.river.error(msg)
+  error (msg: any, ...elements: any[]): void {
+    this.river.error(msg, ...elements)
   }
 
-  debug (...msg: any[]): void {
-    this.river.debug(msg)
+  debug (msg: any, ...elements: any[]): void {
+    this.river.debug(msg, ...elements)
   }
 
-  trace (...msg: any[]): void {
-    this.tracer(msg)
+  trace (msg: any, ...elements: any[]): void {
+    this.tracer(msg, ...elements)
   }
 }
 
