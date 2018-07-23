@@ -152,6 +152,13 @@ export default class HyperClient {
       await this.createPod(podSpec).catch(async (err) => {
         console.log('second error hyperclient')
         console.log(err)
+        console.log('waiting 5s for second hyper create')
+        await new Promise(resolve => {
+          setTimeout(() => {
+            console.log('waited 5 seconds to fail second create')
+            resolve()
+          })
+        })
         throw Boom.badImplementation('you failed')
       })
       console.log('hyperclient tried to create again')
