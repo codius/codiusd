@@ -116,7 +116,6 @@ export default function (server: Hapi.Server, deps: Injector) {
       console.log('interval cleared')
       res.setHeader('Content-type', 'application/json')
       console.log('headers set')
-      res.end(JSON.stringify(result))
       console.log('waiting 5s for proper response')
       await new Promise(resolve => {
         setTimeout(() => {
@@ -124,6 +123,7 @@ export default function (server: Hapi.Server, deps: Injector) {
           resolve()
         }, 5000)
       })
+      res.end(JSON.stringify(result))
       console.log('returned response')
     } catch (e) {
       console.log('caught an error at pods')
@@ -134,7 +134,6 @@ export default function (server: Hapi.Server, deps: Injector) {
       const errRes = { error: 'Internal Server Error' }
       const resJSON = JSON.stringify(errRes)
       console.log('RESJSON: ', resJSON)
-      res.end(JSON.stringify({ error: 'Internal Server Error' }))
       console.log('waiting 5s for error response')
       await new Promise(resolve => {
         setTimeout(() => {
@@ -142,6 +141,7 @@ export default function (server: Hapi.Server, deps: Injector) {
           resolve()
         }, 5000)
       })
+      res.end(JSON.stringify({ error: 'Internal Server Error' }))      
       log.error('error uploading pod. error=' + e.message)
     }
 

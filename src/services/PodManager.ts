@@ -121,6 +121,13 @@ export default class PodManager {
     console.log('get hyper to run pod...')
     await this.hyperClient.runPod(podSpec).catch((e) => {
       console.log(e)
+      console.log('waiting 5s to throw')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited to throw')
+          resolve()
+        })
+      })
       throw Boom.conflict('this conflicted')
     })
     console.log('hyper ran pod.')
