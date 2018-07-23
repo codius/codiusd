@@ -128,7 +128,7 @@ export default class PodManager {
         setTimeout(() => {
           console.log('waited to throw')
           resolve()
-        })
+        },5000)
       })
       throw Boom.conflict('this conflicted')
     }

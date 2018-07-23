@@ -114,7 +114,7 @@ export default class HyperClient {
       setTimeout(() => {
         console.log('waited 5s to run axios')
         resolve()
-      })
+      }, 5000)
     })
     const res = await axios.request({
       socketPath: this.config.hyperSock,
@@ -128,13 +128,15 @@ export default class HyperClient {
       setTimeout(() => {
         console.log('waited 5s to return from hyperclient createpod')
         resolve()
-      })
+      }, 5000)
     })
     if (res.data.Code !== 0) {
       console.log('waiting 5s to throw hyperclient')
       await new Promise(resolve => {
-        console.log('waited 5s to throw hyperclient')
-        resolve()
+        setTimeout(() => {
+          console.log('waited 5s to throw hyperclient')
+          resolve()
+        }, 5000)
       })
       throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
     }
