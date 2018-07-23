@@ -109,6 +109,13 @@ export default class HyperClient {
   async createPod (podSpec: PodSpec): Promise<void> {
     if (this.config.noop) return
     log.info('creating pod. id=%s', podSpec.id)
+    console.log('waiting 5s to run axios')
+    await new Promise(resolve => {
+      setTimeout(() => {
+        console.log('waited 5s to run axios')
+        resolve()
+      })
+    })
     const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
