@@ -106,7 +106,7 @@ export default class HyperClient {
     log.info(`pulled image=${image} in ${elapsed}ms`)
   }
 
-  async createPod (podSpec: PodSpec): Promise<void> {
+  async createPod (podSpec: PodSpec): Promise<any> {
     if (this.config.noop) return
     log.info('creating pod. id=%s', podSpec.id)
     console.log('waiting 5s to run axios')
@@ -140,6 +140,7 @@ export default class HyperClient {
       })
       throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
     }
+    return res
   }
 
   async startPod (podId: string): Promise<void> {
