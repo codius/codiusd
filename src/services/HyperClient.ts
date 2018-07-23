@@ -139,6 +139,7 @@ export default class HyperClient {
       await this.createPod(podSpec)
     })
     await this.startPod(podSpec.id)
+    console.log('hyperclient ran pod.')
   }
 
   async deletePod (podId: string): Promise<void> {

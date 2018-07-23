@@ -122,7 +122,9 @@ export default class PodManager {
     console.log('hyper ran pod.')
 
     const ip = await this.hyper.getPodIP(podSpec.id)
+    console.log('acquired pod IP')
     await this.pods.setPodIP(podSpec.id, ip)
+    console.log('pod IP set')
   }
 
   async getLogStream (podId: string, follow: boolean = false) {

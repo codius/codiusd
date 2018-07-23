@@ -109,9 +109,13 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     try {
       const result = await method(request, duration)
+      console.log('result acquired')
       clearInterval(streamer)
+      console.log('interval cleared')
       res.setHeader('Content-type', 'application/json')
+      console.log('headers set')
       res.end(JSON.stringify(result))
+      console.log('returned response')
     } catch (e) {
       console.log('caught an error at pods')
       clearInterval(streamer)
