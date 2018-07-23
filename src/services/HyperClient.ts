@@ -116,6 +116,11 @@ export default class HyperClient {
       data: podSpec
     })
     if (res.data.Code !== 0) {
+      console.log('waiting 5s to throw hyperclient')
+      await new Promise(resolve => {
+        console.log('waited 5s to throw hyperclient')
+        resolve()
+      })
       throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
     }
   }

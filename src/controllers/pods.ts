@@ -141,7 +141,7 @@ export default function (server: Hapi.Server, deps: Injector) {
           resolve()
         }, 5000)
       })
-      res.end(JSON.stringify({ error: 'Internal Server Error' }))      
+      res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
     }
 
