@@ -98,7 +98,7 @@ export default function (server: Hapi.Server, deps: Injector) {
         throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
       }
       method = postPod
-    } else if (method === 'put') {
+    } else if (request.method === 'put') {
       method = extendPod
     } else {
       log.error('error uploading pod. error=Invalid method')
@@ -119,7 +119,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     } catch (e) {
       console.log('caught an error at pods')
       clearInterval(streamer)
-      res.writeHead(500, 'Internal Server Error', { 'Content-type': 'applicaton/json' })
+      res.writeHead(500, 'Internal Server Error', { 'Content-type': 'application/json' })
       res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
     }
