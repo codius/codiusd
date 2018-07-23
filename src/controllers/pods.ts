@@ -116,7 +116,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       clearInterval(streamer)
       res.end()
       log.error('error uploading pod. error=' + e.message)
-      throw Boom.badImplementation('Failed to upload pod.')
+      // throw Boom.badImplementation('Failed to upload pod.')
     }
 
     return h.abandon
