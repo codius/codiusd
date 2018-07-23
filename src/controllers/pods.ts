@@ -83,7 +83,6 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function streamPod (request: any, h: Hapi.ResponseToolkit) {
     const res = request.raw.res
-    res.setHeader('Content-type', 'application/json')
     const streamer = setInterval(() => {
       res.write(' ')
     }, config.timeout)
@@ -113,14 +112,14 @@ export default function (server: Hapi.Server, deps: Injector) {
       console.log('result acquired')
       clearInterval(streamer)
       console.log('interval cleared')
+      res.setHeader('Content-type', 'application/json')
       console.log('headers set')
       res.end(JSON.stringify(result))
       console.log('returned response')
     } catch (e) {
       console.log('caught an error at pods')
       clearInterval(streamer)
-      // res.statusCode = 500
-      res.writeHead(500, 'Internal Server Error')
+      res.writeHead(500, 'Internal Server Error', { 'Content-type': 'applicaton/json' })
       res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
     }
