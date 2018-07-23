@@ -87,6 +87,8 @@ export default function (server: Hapi.Server, deps: Injector) {
       res.write(' ')
     }, config.timeout)
 
+    console.log(res.headersSent)
+
     let method
     if (request.method === 'post') {
       // throw error if memory usage exceeds available memory
@@ -115,15 +117,31 @@ export default function (server: Hapi.Server, deps: Injector) {
       res.setHeader('Content-type', 'application/json')
       console.log('headers set')
       res.end(JSON.stringify(result))
+      console.log('waiting 5s for proper response')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited for proper response')
+          resolve()
+        }, 5000)
+      })
       console.log('returned response')
     } catch (e) {
       console.log('caught an error at pods')
       clearInterval(streamer)
+      console.log(res.headersSent)
       res.writeHead(500, 'Internal Server Error', { 'Content-type': 'application/json' })
+      console.log(res.headersSent)
       const errRes = { error: 'Internal Server Error' }
       const resJSON = JSON.stringify(errRes)
       console.log('RESJSON: ', resJSON)
       res.end(JSON.stringify({ error: 'Internal Server Error' }))
+      console.log('waiting 5s for error response')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited for error response')
+          resolve()
+        }, 5000)
+      })
       log.error('error uploading pod. error=' + e.message)
     }
 
