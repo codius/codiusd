@@ -81,33 +81,92 @@ export default function (server: Hapi.Server, deps: Injector) {
     return duration
   }
 
-  // TODO: how to add plugin decorate functions to Hapi.Request type
-  async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
+  async function streamPod (request: any, h: Hapi.ResponseToolkit) {
+    const res = request.raw.res
+    const streamer = setInterval(() => {
+      res.write(' ')
+    }, config.timeout)
+
+    console.log(res.headersSent)
+
+    let method
+    if (request.method === 'post') {
+      // throw error if memory usage exceeds available memory
+      const podSpec = manifestParser.manifestToPodSpec(
+        request.payload['manifest'],
+        request.payload['private'] || {}
+      )
+      if (checkIfHostFull(podSpec)) {
+        throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
+      }
+      method = postPod
+    } else if (request.method === 'put') {
+      method = extendPod
+    } else {
+      log.error('error uploading pod. error=Invalid method')
+      throw Boom.methodNotAllowed('Invalid method.')
+    }
+
     const duration = await chargeForDuration(request)
 
+    try {
+      const result = await method(request, duration)
+      console.log('result acquired')
+      clearInterval(streamer)
+      console.log('interval cleared')
+      res.setHeader('Content-type', 'application/json')
+      console.log('headers set')
+      console.log('waiting 5s for proper response')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited for proper response')
+          resolve()
+        }, 5000)
+      })
+      res.end(JSON.stringify(result))
+      console.log('returned response')
+    } catch (e) {
+      console.log('caught an error at pods')
+      clearInterval(streamer)
+      console.log(res.headersSent)
+      res.writeHead(500, 'Internal Server Error', { 'Content-type': 'application/json' })
+      console.log(res.headersSent)
+      const errRes = { error: 'Internal Server Error' }
+      const resJSON = JSON.stringify(errRes)
+      console.log('RESJSON: ', resJSON)
+      console.log('waiting 5s for error response')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited for error response')
+          resolve()
+        }, 5000)
+      })
+      res.end(JSON.stringify({ error: 'Internal Server Error' }))
+      log.error('error uploading pod. error=' + e.message)
+    }
+    console.log('Hapi abandoning res...')
+    return h.abandon
+  }
+
+  async function postPod (request: any, duration: any) {
     const podSpec = manifestParser.manifestToPodSpec(
       request.payload['manifest'],
       request.payload['private'] || {}
     )
-
-    // throw error if memory usage exceeds available memory
-    if (checkIfHostFull(podSpec)) {
-      throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
-    }
-
+    console.log('podspec made')
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
-
+    console.log('pod started')
     await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
-
+    console.log('manifest saved')
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
-
+    console.log('got PodInfo')
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${podSpec.id}`)
     }
-
+    console.log('returning..')
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
@@ -115,22 +174,21 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
-  async function extendPod (request: any, h: Hapi.ResponseToolkit) {
-    const duration = await chargeForDuration(request)
-
+  async function extendPod (request: any, duration: any) {
     const manifestHash = request.query['manifestHash']
     if (!manifestHash) {
       throw Boom.badData('manifestHash must be specified')
     }
-
+    console.log('podspec made')
     await podDatabase.addDurationToPod(manifestHash, duration)
-
+    console.log('added duration')
     const podInfo = podDatabase.getPod(manifestHash)
+    console.log('got pod from db')
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${manifestHash}`)
     }
-
+    console.log('returning...')
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
@@ -226,7 +284,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   server.route({
     method: 'PUT',
     path: '/pods',
-    handler: extendPod,
+    handler: streamPod,
     options: {
       validate: {
         payload: false
@@ -248,7 +306,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   server.route({
     method: 'POST',
     path: '/pods',
-    handler: postPod,
+    handler: streamPod,
     options: {
       validate: {
         payload: Enjoi(PodRequest),

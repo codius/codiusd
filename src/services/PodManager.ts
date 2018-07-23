@@ -8,6 +8,7 @@ import ManifestDatabase from './ManifestDatabase'
 import { checkMemory } from '../util/podResourceCheck'
 import { Transform, PassThrough } from 'stream'
 import * as multi from 'multi-read-stream'
+import * as Boom from 'boom'
 import {
   block,
   onForward,
@@ -117,11 +118,26 @@ export default class PodManager {
     if (port && Number(port) > 0) {
       await this.pods.setPodPort(podSpec.id, port)
     }
-
-    await this.hyperClient.runPod(podSpec)
+    console.log('get hyper to run pod...')
+    try {
+      await this.hyperClient.runPod(podSpec)
+    } catch (e) {
+      console.log(e)
+      console.log('waiting 5s to throw')
+      await new Promise(resolve => {
+        setTimeout(() => {
+          console.log('waited to throw')
+          resolve()
+        },5000)
+      })
+      throw Boom.conflict('this conflicted')
+    }
+    console.log('hyper ran pod.')
 
     const ip = await this.hyper.getPodIP(podSpec.id)
+    console.log('acquired pod IP')
     await this.pods.setPodIP(podSpec.id, ip)
+    console.log('pod IP set')
   }
 
   async getLogStream (podId: string, follow: boolean = false) {
