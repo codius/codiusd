@@ -119,7 +119,8 @@ export default function (server: Hapi.Server, deps: Injector) {
     } catch (e) {
       console.log('caught an error at pods')
       clearInterval(streamer)
-      res.statusCode = 500
+      // res.statusCode = 500
+      res.writeHead(500, 'Internal Serve Error')
       // res.setHeader('Content-type', 'application/json')
       res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
