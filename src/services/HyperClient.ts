@@ -123,6 +123,11 @@ export default class HyperClient {
       })
       throw Boom.serverUnavailable('Could not create pod: hyper error code=' + res.data.Code)
     }
+    console.log('waiting 5s to return from hyperclient createpod')
+    await new Promise(resolve => {
+      console.log('waited 5s to return from hyperclient createpod')
+      resolve()
+    })
   }
 
   async startPod (podId: string): Promise<void> {
