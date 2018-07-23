@@ -159,6 +159,7 @@ export default class HyperClient {
       await this.createPod(podSpec)
     } catch (e) {
       console.log(e)
+      throw Boom.badImplementation('you failed')
     }
     //   console.log('caught an error at hyperclient')
     //   log.warn(`pulling images after error="${err.message}"`)
