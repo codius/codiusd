@@ -127,7 +127,7 @@ export default class HyperClient {
     await new Promise(resolve => {
       console.log('waited 5s to return from hyperclient createpod')
       resolve()
-    })
+    }, 5000)
   }
 
   async startPod (podId: string): Promise<void> {
