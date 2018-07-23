@@ -131,8 +131,7 @@ export default class PodManager {
           })
         })
         throw Boom.conflict('this conflicted')
-      }
-    })
+    }
     console.log('hyper ran pod.')
 
     const ip = await this.hyper.getPodIP(podSpec.id)
