@@ -154,24 +154,29 @@ export default class HyperClient {
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
-    await this.createPod(podSpec).catch(async (err) => {
-      console.log('caught an error at hyperclient')
-      log.warn(`pulling images after error="${err.message}"`)
-      await this.pullImages(podSpec)
-      await this.createPod(podSpec).catch(async (err) => {
-        console.log('second error hyperclient')
-        console.log(err)
-        console.log('waiting 5s for second hyper create')
-        await new Promise(resolve => {
-          setTimeout(() => {
-            console.log('waited 5 seconds to fail second create')
-            resolve()
-          })
-        })
-        throw Boom.badImplementation('you failed')
-      })
-      console.log('hyperclient tried to create again')
-    })
+    // await this.createPod(podSpec).catch(async (err) => {
+    try {
+      await this.createPod(podSpec)
+    } catch (e) {
+      console.log(e)
+    }
+    //   console.log('caught an error at hyperclient')
+    //   log.warn(`pulling images after error="${err.message}"`)
+    //   await this.pullImages(podSpec)
+    //   await this.createPod(podSpec).catch(async (err) => {
+    //     console.log('second error hyperclient')
+    //     console.log(err)
+    //     console.log('waiting 5s for second hyper create')
+    //     await new Promise(resolve => {
+    //       setTimeout(() => {
+    //         console.log('waited 5 seconds to fail second create')
+    //         resolve()
+    //       })
+    //     })
+    //     throw Boom.badImplementation('you failed')
+    //   })
+    //   console.log('hyperclient tried to create again')
+    // })
     await this.startPod(podSpec.id)
     console.log('hyperclient ran pod.')
   }
