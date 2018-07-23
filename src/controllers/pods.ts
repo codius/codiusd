@@ -159,15 +159,16 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (!manifestHash) {
       throw Boom.badData('manifestHash must be specified')
     }
-
+    console.log('podspec made')
     await podDatabase.addDurationToPod(manifestHash, duration)
-
+    console.log('added duration')
     const podInfo = podDatabase.getPod(manifestHash)
+    console.log('got pod from db')
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${manifestHash}`)
     }
-
+    console.log('returning...')
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
