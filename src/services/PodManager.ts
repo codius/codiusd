@@ -119,7 +119,7 @@ export default class PodManager {
       await this.pods.setPodPort(podSpec.id, port)
     }
     console.log('get hyper to run pod...')
-    await this.hyperClient.runPod(podSpec).catch((e) => {
+    await this.hyperClient.runPod(podSpec).catch(async (e) => {
       console.log(e)
       console.log('waiting 5s to throw')
       await new Promise(resolve => {
