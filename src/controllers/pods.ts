@@ -128,20 +128,20 @@ export default function (server: Hapi.Server, deps: Injector) {
       request.payload['manifest'],
       request.payload['private'] || {}
     )
-
+    console.log('podspec made')
     await podManager.startPod(podSpec, duration,
       request.payload['manifest']['port'])
-
+    console.log('pod started')
     await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
-
+    console.log('manifest saved')
     // return info about running pod to uploader
     const podInfo = podDatabase.getPod(podSpec.id)
-
+    console.log('got PodInfo')
     if (!podInfo) {
       throw Boom.serverUnavailable('pod has stopped. ' +
         `manifestHash=${podSpec.id}`)
     }
-
+    console.log('returning..')
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
