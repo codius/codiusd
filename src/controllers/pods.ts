@@ -114,9 +114,10 @@ export default function (server: Hapi.Server, deps: Injector) {
       res.end(JSON.stringify(result))
     } catch (e) {
       clearInterval(streamer)
-      res.end()
+      res.statusCode = 500
+      res.setHeader('Content-type', 'application/json')
+      res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
-      // throw Boom.badImplementation('Failed to upload pod.')
     }
 
     return h.abandon
