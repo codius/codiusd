@@ -115,7 +115,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     } catch (e) {
       clearInterval(streamer)
       res.statusCode = 500
-      res.setHeader('Content-type', 'application/json')
+      // res.setHeader('Content-type', 'application/json')
       res.end(JSON.stringify({ error: 'Internal Server Error' }))
       log.error('error uploading pod. error=' + e.message)
     }
