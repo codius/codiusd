@@ -133,6 +133,7 @@ export default class HyperClient {
 
   async runPod (podSpec: PodSpec): Promise<void> {
     await this.createPod(podSpec).catch(async (err) => {
+      console.log('caught an error at hyperclient')
       log.warn(`pulling images after error="${err.message}"`)
       await this.pullImages(podSpec)
       await this.createPod(podSpec)

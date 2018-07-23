@@ -113,6 +113,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       res.setHeader('Content-type', 'application/json')
       res.end(JSON.stringify(result))
     } catch (e) {
+      console.log('caught an error at pods')
       clearInterval(streamer)
       res.statusCode = 500
       // res.setHeader('Content-type', 'application/json')

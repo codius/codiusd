@@ -117,8 +117,9 @@ export default class PodManager {
     if (port && Number(port) > 0) {
       await this.pods.setPodPort(podSpec.id, port)
     }
-
+    console.log('get hyper to run pod...')
     await this.hyperClient.runPod(podSpec)
+    console.log('hyper ran pod.')
 
     const ip = await this.hyper.getPodIP(podSpec.id)
     await this.pods.setPodIP(podSpec.id, ip)
