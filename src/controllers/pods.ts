@@ -71,6 +71,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       log.error('request.ilpStream ' + err)
       log.error(stream)
     }
+    stream = request.ilpSteam()
     try {
       await stream.receiveTotal(price)
     } catch (e) {
