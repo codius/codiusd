@@ -110,8 +110,9 @@ export default function (server: Hapi.Server, deps: Injector) {
         throw Boom.serverUnavailable('pod has stopped. ' +
                                      `manifestHash=${podSpec.id}`)
       }
-    } catch (e) {
-      throw Boom.badImplementation(e)
+    } catch (err) {
+      log.error(`post pod failed. erro=${err}`)
+      throw Boom.badImplementation('pod pod failed')
     }
 
     return {
