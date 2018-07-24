@@ -1,4 +1,5 @@
 // import axios from 'axios'
+import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from './Config'
@@ -125,6 +126,7 @@ export default class PodManager {
       })
     } catch (err) {
       log.error(`run pod failed, error: ${err}`)
+      throw Boom.badImplementation('run pod failed')
     }
 
   }
