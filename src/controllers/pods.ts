@@ -65,15 +65,11 @@ export default function (server: Hapi.Server, deps: Injector) {
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
     log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
     let stream
-    console.log(request.ilpStream())
     try {
     stream = await request.ilpStream()
     } catch (err) {
       log.error('request.ilpStream ' + err)
-      log.error(stream)
     }
-    // stream = request.ilpStream()
-    log.warn(stream)
     try {
       await stream.receiveTotal(price)
     } catch (e) {
