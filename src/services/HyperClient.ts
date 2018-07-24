@@ -123,12 +123,14 @@ export default class HyperClient {
   async startPod (podId: string): Promise<void> {
     if (this.config.noop) return
     log.info('starting pod. id=%s', podId)
-    await axios.request({
+    const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'post',
       url: '/pod/start',
       params: { podId }
     })
+    log.warn('start pod')
+    log.warn(res)
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
