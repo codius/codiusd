@@ -84,34 +84,34 @@ export default function (server: Hapi.Server, deps: Injector) {
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     let podInfo
-    try {
-      const duration = await chargeForDuration(request)
-      log.error('duration ' + duration)
-      const podSpec = manifestParser.manifestToPodSpec(
-        request.payload['manifest'],
-        request.payload['private'] || {}
-      )
+    // try {
+    const duration = await chargeForDuration(request)
+    log.error('duration ' + duration)
+    const podSpec = manifestParser.manifestToPodSpec(
+      request.payload['manifest'],
+      request.payload['private'] || {}
+    )
 
-      // throw error if memory usage exceeds available memory
-      if (checkIfHostFull(podSpec)) {
-        throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
-      }
-
-      await podManager.startPod(podSpec, duration,
-                                request.payload['manifest']['port'])
-
-      await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
-
-      // return info about running pod to uploader
-      podInfo = podDatabase.getPod(podSpec.id)
-
-      if (!podInfo) {
-        throw Boom.serverUnavailable('pod has stopped. ' +
-                                     `manifestHash=${podSpec.id}`)
-      }
-    } catch (e) {
-      throw Boom.badImplementation(e)
+    // throw error if memory usage exceeds available memory
+    if (checkIfHostFull(podSpec)) {
+      throw Boom.serverUnavailable('Memory usage exceeded. Send pod request later.')
     }
+
+    await podManager.startPod(podSpec, duration,
+                              request.payload['manifest']['port'])
+
+    await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
+
+    // return info about running pod to uploader
+    podInfo = podDatabase.getPod(podSpec.id)
+
+    if (!podInfo) {
+      throw Boom.serverUnavailable('pod has stopped. ' +
+                                   `manifestHash=${podSpec.id}`)
+    }
+    // } catch (e) {
+    //   throw Boom.badImplementation(e)
+    // }
 
     return {
       url: getPodUrl(podInfo.id),
