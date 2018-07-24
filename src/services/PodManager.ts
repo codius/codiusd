@@ -127,7 +127,8 @@ export default class PodManager {
 
     } catch (err) {
       log.error(`run pod failed, error: ${err}`)
-      await this.pods.deletePod(podSpec.id)
+      // await this.pods.deletePod(podSpec.id)
+      // await this.manifests.deleteManifest(podSpec.id)
       throw Boom.badImplementation('run pod failed')
     }
 
