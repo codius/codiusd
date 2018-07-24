@@ -1,4 +1,5 @@
 // import axios from 'axios'
+import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from './Config'
@@ -77,7 +78,7 @@ export default class PodManager {
           `error=${e.message}`)
       }
 
-      this.pods.deletePod(pod)
+      await this.pods.deletePod(pod)
     }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
@@ -106,22 +107,30 @@ export default class PodManager {
       }
     }
 
-    await this.pods.addPod({
-      id: podSpec.id,
-      running: true,
-      duration,
-      memory: checkMemory(podSpec.resource)
-    })
+    try {
+      await this.pods.addPod({
+        id: podSpec.id,
+        running: true,
+        duration,
+        memory: checkMemory(podSpec.resource)
+      })
 
-    // TODO: validate regex on port arg incoming
-    if (port && Number(port) > 0) {
-      await this.pods.setPodPort(podSpec.id, port)
+      // TODO: validate regex on port arg incoming
+      if (port && Number(port) > 0) {
+        await this.pods.setPodPort(podSpec.id, port)
+      }
+      await this.hyperClient.runPod(podSpec)
+
+      const ip = await this.hyper.getPodIP(podSpec.id)
+      await this.pods.setPodIP(podSpec.id, ip)
+
+    } catch (err) {
+      log.error(`run pod failed, error=${err.message}`)
+      throw Boom.badImplementation('run pod failed')
+    } finally {
+      await this.verifyRunningPods()
     }
 
-    await this.hyperClient.runPod(podSpec)
-
-    const ip = await this.hyper.getPodIP(podSpec.id)
-    await this.pods.setPodIP(podSpec.id, ip)
   }
 
   async getLogStream (podId: string, follow: boolean = false) {
@@ -156,6 +165,15 @@ export default class PodManager {
     }
 
     return multi(streams)
+  }
+
+  private async verifyRunningPods () {
+    const dbPods = this.pods.getRunningPods()
+    log.debug(`dbPods=${dbPods}`)
+    const runningPodsSet = new Set(await this.hyperClient.getPodList())
+    const podsToDelete = dbPods.filter(pod => !runningPodsSet.has(pod))
+    log.debug(`delete pods=${podsToDelete}`)
+    this.pods.deletePods(podsToDelete)
   }
 
   private async protectNetwork () {
