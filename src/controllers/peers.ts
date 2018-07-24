@@ -1,18 +1,24 @@
 import * as Hapi from 'hapi'
 import * as Joi from 'joi'
+import * as Boom from 'boom'
 import { Injector } from 'reduct'
 import PeerDatabase from '../services/PeerDatabase'
 import Version from '../services/Version'
+import Config from '../services/Config'
 
 export default function (server: Hapi.Server, deps: Injector) {
   const peerDb = deps(PeerDatabase)
   const ver = deps(Version)
+  const config = deps(Config)
 
   async function getPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return { peers: peerDb.getPeers(request.query['limit']) }
   }
 
   async function postPeers (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    if (!config.selfTestSuccess) {
+      throw Boom.forbidden('This host is misconfigured.')
+    }
     peerDb.addPeers(request.payload['peers'])
     return {
       name: ver.getImplementationName(),

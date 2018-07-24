@@ -48,10 +48,10 @@ export default class App {
     if (this.config.adminApi) {
       await this.adminServer.start()
     }
-    this.peerFinder.start()
     this.podManager.start()
-    this.backgroundValidatePeers.start()
     this.selfTest.start()
+    this.peerFinder.start()
+    this.backgroundValidatePeers.start()
   }
 
   private makeRootDir () {

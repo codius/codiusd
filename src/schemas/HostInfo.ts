@@ -17,4 +17,5 @@ export interface HostInfo {
   uri: string;
   runningContracts?: number;
   peers?: string[];
+  selfTestSuccess?: boolean;
 }
