@@ -133,22 +133,18 @@ export default class HyperClient {
       })
     } catch (err) {
       log.warn('start pod failed')
-      log.warn(err)
     }
     log.warn('start pod end')
-    log.warn(res)
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
     await this.createPod(podSpec).catch(async (err) => {
       log.warn(`pulling images after error="${err.message}"`)
       try {
-        await this.deletePod(podSpec.id)
         await this.pullImages(podSpec)
         await this.createPod(podSpec)
       } catch (e) {
         log.error('create pod 2 fail')
-        log.error(e)
 
       }
     })
