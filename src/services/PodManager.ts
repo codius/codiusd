@@ -108,6 +108,13 @@ export default class PodManager {
     }
 
     try {
+      await this.pods.addPod({
+        id: podSpec.id,
+        running: true,
+        duration,
+        memory: checkMemory(podSpec.resource)
+      })
+
       // TODO: validate regex on port arg incoming
       if (port && Number(port) > 0) {
         await this.pods.setPodPort(podSpec.id, port)
@@ -115,17 +122,12 @@ export default class PodManager {
 
       await this.hyperClient.runPod(podSpec)
 
-      await this.pods.addPod({
-        id: podSpec.id,
-        running: true,
-        duration,
-        memory: checkMemory(podSpec.resource)
-      })
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
     } catch (err) {
       log.error(`run pod failed, error: ${err}`)
+      await this.pods.deletePod(podSpec.id)
       throw Boom.badImplementation('run pod failed')
     }
 
