@@ -91,7 +91,7 @@ export default class HyperClient {
     const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'get',
-      url: '/list',
+      url: '/list?item=pod',
       responseType: 'json'
     })
 

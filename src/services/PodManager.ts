@@ -119,8 +119,6 @@ export default class PodManager {
       if (port && Number(port) > 0) {
         await this.pods.setPodPort(podSpec.id, port)
       }
-      log.info('run pod')
-      console.log('travis')
       await this.hyperClient.runPod(podSpec)
 
       const ip = await this.hyper.getPodIP(podSpec.id)
