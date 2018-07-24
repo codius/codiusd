@@ -111,8 +111,8 @@ export default function (server: Hapi.Server, deps: Injector) {
                                      `manifestHash=${podSpec.id}`)
       }
     } catch (err) {
-      log.error(`post pod failed. erro=${err}`)
-      throw Boom.badImplementation('pod pod failed')
+      log.error(`post pod failed. error=${err.message}`)
+      throw Boom.badImplementation('post pod failed')
     }
 
     return {
