@@ -123,13 +123,19 @@ export default class HyperClient {
   async startPod (podId: string): Promise<void> {
     if (this.config.noop) return
     log.info('starting pod. id=%s', podId)
-    const res = await axios.request({
-      socketPath: this.config.hyperSock,
-      method: 'post',
-      url: '/pod/start',
-      params: { podId }
-    })
-    log.warn('start pod')
+    let res
+    try {
+      res = await axios.request({
+        socketPath: this.config.hyperSock,
+        method: 'post',
+        url: '/pod/start',
+        params: { podId }
+      })
+    } catch (err) {
+      log.warn('start pod failed')
+      log.warn(err)
+    }
+    log.warn('start pod success')
     log.warn(res)
   }
 
