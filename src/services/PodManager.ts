@@ -78,7 +78,7 @@ export default class PodManager {
           `error=${e.message}`)
       }
 
-      this.pods.deletePod(pod)
+      await this.pods.deletePod(pod)
     }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
@@ -108,6 +108,7 @@ export default class PodManager {
     }
 
     try {
+      await this.hyperClient.runPod(podSpec)
       await this.pods.addPod({
         id: podSpec.id,
         running: true,
@@ -120,15 +121,13 @@ export default class PodManager {
         await this.pods.setPodPort(podSpec.id, port)
       }
 
-      await this.hyperClient.runPod(podSpec)
-
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
     } catch (err) {
       log.error(`run pod failed, error: ${err}`)
-      // await this.pods.deletePod(podSpec.id)
-      // await this.manifests.deleteManifest(podSpec.id)
+      await this.pods.deletePod(podSpec.id)
+      await this.manifests.deleteManifest(podSpec.id)
       throw Boom.badImplementation('run pod failed')
     }
 
