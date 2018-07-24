@@ -84,7 +84,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   // TODO: how to add plugin decorate functions to Hapi.Request type
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     let podInfo
-    try {
+    // try {
       const duration = await chargeForDuration(request)
 
       const podSpec = manifestParser.manifestToPodSpec(
@@ -109,9 +109,9 @@ export default function (server: Hapi.Server, deps: Injector) {
         throw Boom.serverUnavailable('pod has stopped. ' +
                                      `manifestHash=${podSpec.id}`)
       }
-    } catch (e) {
-      throw Boom.badImplementation(e)
-    }
+    // } catch (e) {
+    //   throw Boom.badImplementation(e)
+    // }
 
     return {
       url: getPodUrl(podInfo.id),
