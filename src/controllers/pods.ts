@@ -85,7 +85,12 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function postPod (request: any, h: Hapi.ResponseToolkit): Promise<PostPodResponse> {
     let podInfo
     try {
+      try {
       const duration = await chargeForDuration(request)
+      } catch (err) {
+        log.error('charge for duration')
+        }
+
 
       const podSpec = manifestParser.manifestToPodSpec(
         request.payload['manifest'],
