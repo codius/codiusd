@@ -97,23 +97,18 @@ export default function (server: Hapi.Server, deps: Injector) {
 
     const duration = await chargeForDuration(request)
 
-    // try {
-      await podManager.startPod(podSpec, duration,
-                                request.payload['manifest']['port'])
+    await podManager.startPod(podSpec, duration,
+                              request.payload['manifest']['port'])
 
-      await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
+    await manifestDatabase.saveManifest(podSpec.id, request.payload['manifest'])
 
-      // return info about running pod to uploader
-      podInfo = podDatabase.getPod(podSpec.id)
+    // return info about running pod to uploader
+    podInfo = podDatabase.getPod(podSpec.id)
 
-      if (!podInfo) {
-        throw Boom.serverUnavailable('pod has stopped. ' +
-                                     `manifestHash=${podSpec.id}`)
-      }
-    // } catch (err) {
-    //   log.error(`post pod failed. error=${err.message}`)
-    //   throw Boom.badImplementation('post pod failed')
-    // }
+    if (!podInfo) {
+      throw Boom.serverUnavailable('pod has stopped. ' +
+                                   `manifestHash=${podSpec.id}`)
+    }
 
     return {
       url: getPodUrl(podInfo.id),
