@@ -117,16 +117,16 @@ export default class PodManager {
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
+      await this.pods.addPod({
+        id: podSpec.id,
+        running: true,
+        duration,
+        memory: checkMemory(podSpec.resource)
+      })
     } catch (err) {
       log.error(`run pod failed, error: ${err}`)
     }
 
-    await this.pods.addPod({
-      id: podSpec.id,
-      running: true,
-      duration,
-      memory: checkMemory(podSpec.resource)
-    })
   }
 
   async getLogStream (podId: string, follow: boolean = false) {
