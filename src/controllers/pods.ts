@@ -153,6 +153,11 @@ export default function (server: Hapi.Server, deps: Injector) {
         `manifestHash=${manifestHash}`)
     }
 
+    if (manifest.privateManifest) {
+      throw Boom.serverUnavailable('attempted to get private pod. ' +
+        `manifestHash=${manifestHash}`)
+    }
+
     return {
       url: getPodUrl(podInfo.id),
       manifestHash: podInfo.id,
@@ -202,6 +207,10 @@ export default function (server: Hapi.Server, deps: Injector) {
       .header('Content-Type', 'application/vnd.codius.raw-stream')
       .header('Connection', 'keep-alive')
       .header('Cache-Control', 'no-cache')
+  }
+
+  async function getAllPods (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return podDatabase.getPublicRunningPods()
   }
 
   server.route({
@@ -268,5 +277,11 @@ export default function (server: Hapi.Server, deps: Injector) {
     method: 'GET',
     path: '/pods/{id}/logs',
     handler: getPodLogs
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/pods/all',
+    handler: getAllPods
   })
 }

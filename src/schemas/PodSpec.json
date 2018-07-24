@@ -23,8 +23,12 @@
         "$ref": "./ContainerSpec.json"
       },
       "minItems": 1
+    },
+    "unlisted": {
+      "type": "boolean",
+      "required": true
     }
   },
-  "required": [ "id", "containers" ],
+  "required": [ "id", "containers", "unlisted" ],
   "additionalProperties": false
 }

@@ -112,7 +112,8 @@ export default class PodManager {
         id: podSpec.id,
         running: true,
         duration,
-        memory: checkMemory(podSpec.resource)
+        memory: checkMemory(podSpec.resource),
+        unlisted: podSpec.unlisted
       })
 
       // TODO: validate regex on port arg incoming

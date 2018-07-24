@@ -16,7 +16,8 @@ export interface AddPodParams {
   id: string,
   running: boolean,
   duration: string,
-  memory: number
+  memory: number,
+  unlisted: boolean
 }
 
 export default class PodDatabase {
@@ -55,6 +56,13 @@ export default class PodDatabase {
   public getRunningPods (): Array<string> {
     return Array.from(this.pods.values())
       .filter(p => p.running)
+      .map(p => p.id)
+  }
+
+  public getPublicRunningPods (): Array<string> {
+    return Array.from(this.pods.values())
+      .filter(p => p.running)
+      .filter(p => !p.unlisted)
       .map(p => p.id)
   }
 
@@ -112,7 +120,8 @@ export default class PodDatabase {
       start: new Date().toISOString(),
       expiry: addDuration(params.duration),
       memory: params.memory,
-      totalUptime: uptime
+      totalUptime: uptime,
+      unlisted: params.unlisted
     }
 
     this.pods.set(info.id, info)

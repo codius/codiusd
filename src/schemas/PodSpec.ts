@@ -20,4 +20,5 @@ export interface PodSpec {
       value?: string;
     }[];
   }[];
+  unlisted: boolean;
 }
