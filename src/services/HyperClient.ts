@@ -85,6 +85,18 @@ export default class HyperClient {
     return ip
   }
 
+  async getPodList (): Promise<void> {
+    if (this.config.noop) return
+    log.info('getting pod list')
+    const res = await axios.request({
+      socketPath: this.config.hyperSock,
+      method: 'get',
+      url: '/list'
+    })
+
+    log.debug(res)
+  }
+
   async pullImages (podSpec: PodSpec): Promise<void> {
     if (this.config.noop) return
     for (const container of podSpec.containers) {
@@ -123,30 +135,19 @@ export default class HyperClient {
   async startPod (podId: string): Promise<void> {
     if (this.config.noop) return
     log.info('starting pod. id=%s', podId)
-    let res
-    // try {
-      res = await axios.request({
-        socketPath: this.config.hyperSock,
-        method: 'post',
-        url: '/pod/start',
-        params: { podId }
-      })
-    // } catch (err) {
-    //   log.warn('start pod failed')
-    // }
-    // log.warn('start pod end')
+    await axios.request({
+      socketPath: this.config.hyperSock,
+      method: 'post',
+      url: '/pod/start',
+      params: { podId }
+    })
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
     await this.createPod(podSpec).catch(async (err) => {
       log.warn(`pulling images after error="${err.message}"`)
-      // try {
-        await this.pullImages(podSpec)
-        await this.createPod(podSpec)
-      // } catch (e) {
-      //   log.error('create pod 2 fail')
-
-      // }
+      await this.pullImages(podSpec)
+      await this.createPod(podSpec)
     })
     await this.startPod(podSpec.id)
   }
