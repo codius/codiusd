@@ -125,6 +125,7 @@ export default class PodManager {
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
+      log.info('get pod list')
       await this.hyperClient.getPodList()
 
     } catch (err) {
