@@ -124,29 +124,29 @@ export default class HyperClient {
     if (this.config.noop) return
     log.info('starting pod. id=%s', podId)
     let res
-    try {
+    // try {
       res = await axios.request({
         socketPath: this.config.hyperSock,
         method: 'post',
         url: '/pod/start',
         params: { podId }
       })
-    } catch (err) {
-      log.warn('start pod failed')
-    }
-    log.warn('start pod end')
+    // } catch (err) {
+    //   log.warn('start pod failed')
+    // }
+    // log.warn('start pod end')
   }
 
   async runPod (podSpec: PodSpec): Promise<void> {
     await this.createPod(podSpec).catch(async (err) => {
       log.warn(`pulling images after error="${err.message}"`)
-      try {
+      // try {
         await this.pullImages(podSpec)
         await this.createPod(podSpec)
-      } catch (e) {
-        log.error('create pod 2 fail')
+      // } catch (e) {
+      //   log.error('create pod 2 fail')
 
-      }
+      // }
     })
     await this.startPod(podSpec.id)
   }

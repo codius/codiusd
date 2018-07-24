@@ -107,26 +107,26 @@ export default class PodManager {
     }
 
     try {
+      // TODO: validate regex on port arg incoming
+      if (port && Number(port) > 0) {
+        await this.pods.setPodPort(podSpec.id, port)
+      }
+
+      await this.hyperClient.runPod(podSpec)
+
+      const ip = await this.hyper.getPodIP(podSpec.id)
+      await this.pods.setPodIP(podSpec.id, ip)
+
+    } catch (err) {
+      log.error(`run pod failed, error: ${err}`)
+    }
+
     await this.pods.addPod({
       id: podSpec.id,
       running: true,
       duration,
       memory: checkMemory(podSpec.resource)
     })
-    } catch (e) {
-      console.log('add pod err')
-      console.log(e)
-    }
-
-    // TODO: validate regex on port arg incoming
-    if (port && Number(port) > 0) {
-      await this.pods.setPodPort(podSpec.id, port)
-    }
-
-    await this.hyperClient.runPod(podSpec)
-
-    const ip = await this.hyper.getPodIP(podSpec.id)
-    await this.pods.setPodIP(podSpec.id, ip)
   }
 
   async getLogStream (podId: string, follow: boolean = false) {
