@@ -67,12 +67,12 @@ export default function (server: Hapi.Server, deps: Injector) {
     let stream
     console.log(request.ilpStream())
     try {
-    stream = request.ilpStream()
+    stream = await request.ilpStream()
     } catch (err) {
       log.error('request.ilpStream ' + err)
       log.error(stream)
     }
-    stream = request.ilpStream()
+    // stream = request.ilpStream()
     log.warn(stream)
     try {
       await stream.receiveTotal(price)
