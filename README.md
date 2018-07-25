@@ -129,6 +129,17 @@ Create a pod that runs a given [Codius Manifest](https://github.com/coilhq/codiu
 * Variables:
    * `duration`: Time in seconds for the Codius host to run your code. Makes an Interledger payment to buy the requested amount of time. Required.
 
+#### `GET /pods/{MANIFEST_HASH}/logs?follow={true/false}`
+Retrieve the most recent data in the standard output of a running pod, as specified by `MANIFEST_HASH`.
+**NOTE: Only pods whose manifests contain `debug: true` in their `manifest` objects will be compatible with this endpoint.**
+
+##### Return Value:
+* Type: Stream
+* Description: A stream containing the most recent data written to the standard output of a given pod.
+
+* Variables:
+  * `follow`: A boolean value that, when set to true, will continue to follow the output of the specified pod's standard output in real time.
+
 #### `GET /peers`
 Returns the peers currently known to this host.
 
