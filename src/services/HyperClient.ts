@@ -87,7 +87,6 @@ export default class HyperClient {
 
   async getPodList (): Promise<Array<string>> {
     if (this.config.noop) return ['']
-    log.info('getting pod list')
     const res = await axios.request({
       socketPath: this.config.hyperSock,
       method: 'get',
@@ -102,6 +101,7 @@ export default class HyperClient {
         return podDataArr[0]
       }
     })
+    log.debug(`running pod list=${pods}`)
     return pods
   }
 
