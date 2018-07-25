@@ -168,11 +168,9 @@ export default class PodManager {
   }
 
   private async verifyRunningPods () {
-    const runningPods = await this.hyperClient.getPodList()
     const dbPods = await this.pods.getRunningPods()
-    log.debug(`running pods=${runningPods}`)
     log.debug(`dbPods=${dbPods}`)
-    const runningPodsSet = new Set(runningPods)
+    const runningPodsSet = new Set(await this.hyperClient.getPodList())
     const podsToDelete = dbPods.filter(pod => !runningPodsSet.has(pod))
     log.debug(`delete pods=${podsToDelete}`)
     this.pods.deletePods(podsToDelete)
