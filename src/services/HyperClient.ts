@@ -85,8 +85,8 @@ export default class HyperClient {
     return ip
   }
 
-  async getPodList (): Promise<void> {
-    if (this.config.noop) return
+  async getPodList (): Promise<Array<string>> {
+    if (this.config.noop) return ['']
     log.info('getting pod list')
     const res = await axios.request({
       socketPath: this.config.hyperSock,
@@ -102,7 +102,7 @@ export default class HyperClient {
         return podDataArr[0]
       }
     })
-    log.debug(pods)
+    return pods
   }
 
   async pullImages (podSpec: PodSpec): Promise<void> {

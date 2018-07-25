@@ -39,6 +39,10 @@ export default class PodDatabase {
     log.debug(`deleted pod from db. id=${id}`)
   }
 
+  public deletePods (pods: Array<string>): void {
+    pods.map(pod => this.deletePod(pod))
+  }
+
   public getExpiredPods (): Array<string> {
     const now = new Date()
     return Array.from(this.pods.values())
