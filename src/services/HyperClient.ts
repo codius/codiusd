@@ -94,7 +94,15 @@ export default class HyperClient {
       url: '/list?item=pod',
       responseType: 'json'
     })
-    log.debug(res.data.podData)
+    const pods = res.data.podData.map((pod: string) => {
+      const podDataArr = pod.split(':')
+      if (podDataArr.length !== 4) return
+      const running = podDataArr[3] === 'running'
+      if (running) {
+        return podDataArr[0]
+      }
+    })
+    log.debug(pods)
   }
 
   async pullImages (podSpec: PodSpec): Promise<void> {
