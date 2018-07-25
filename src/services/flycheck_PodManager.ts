@@ -124,11 +124,11 @@ export default class PodManager {
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
-      this.verifyRunningPods()
-
     } catch (err) {
       log.error(`run pod failed, error=${err.message}`)
       throw Boom.badImplementation('run pod failed')
+    } finally {
+      this.verifyRunningPods()
     }
 
   }
