@@ -124,8 +124,7 @@ export default class PodManager {
       const ip = await this.hyper.getPodIP(podSpec.id)
       await this.pods.setPodIP(podSpec.id, ip)
 
-      log.info('get pod list')
-      await this.hyperClient.getPodList()
+      this.verifyRunningPods()
 
     } catch (err) {
       log.error(`run pod failed, error=${err.message}`)
@@ -166,6 +165,16 @@ export default class PodManager {
     }
 
     return multi(streams)
+  }
+
+  private async verifyRunningPods () {
+    const runningPods = new Set(await this.hyperClient.getPodList())
+    const dbPods = await this.pods.getRunningPods()
+    log.debug(`running pods=${runningPods}`)
+    log.debug(`dbPods=${dbPods}`)
+    const podsToDelete = dbPods.filter(pod => !runningPods.has(pod))
+    log.debug(`delete pods=${podsToDelete}`)
+    this.pods.deletePods(podsToDelete)
   }
 
   private async protectNetwork () {
