@@ -94,8 +94,9 @@ export default class HyperClient {
       responseType: 'json'
     })
 
-    const pods = res.data.podData.reduce((acc: Array<string>, curr: string) => {
-      const podDataArr = curr.split(':')
+    const pods = res.data.podData.reduce((acc: Array<string>, hyperPod: string) => {
+      // hyperPod format is: hash:hash:vm-name:status, needs to be split to get the hash and its status
+      const podDataArr = hyperPod.split(':')
       if (podDataArr.length !== 4) return acc
       if (podDataArr[3] === 'running') {
         return [...acc, podDataArr[0]]
