@@ -93,14 +93,15 @@ export default class HyperClient {
       url: '/list?item=pod',
       responseType: 'json'
     })
-    const pods = res.data.podData.map((pod: string) => {
-      const podDataArr = pod.split(':')
-      if (podDataArr.length !== 4) return
-      const running = podDataArr[3] === 'running'
-      if (running) {
-        return podDataArr[0]
+
+    const pods = res.data.podData.reduce((acc: Array<string>, curr: string) => {
+      const podDataArr = curr.split(':')
+      if (podDataArr.length !== 4) return acc
+      if (podDataArr[3] === 'running') {
+        return [...acc, podDataArr[0]]
       }
-    })
+    }, [])
+
     log.debug(`running pod list=${pods}`)
     return pods
   }

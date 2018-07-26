@@ -33,9 +33,9 @@ export default class PodDatabase {
     return this.pods.get(id)
   }
 
-  public deletePod (id: string): void {
+  public async deletePod (id: string) {
     this.pods.delete(id)
-    this.savePodsToDB()
+    await this.savePodsToDB()
     log.debug(`deleted pod from db. id=${id}`)
   }
 

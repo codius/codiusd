@@ -78,7 +78,7 @@ export default class PodManager {
           `error=${e.message}`)
       }
 
-      this.pods.deletePod(pod)
+      await this.pods.deletePod(pod)
     }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
@@ -128,7 +128,7 @@ export default class PodManager {
       log.error(`run pod failed, error=${err.message}`)
       throw Boom.badImplementation('run pod failed')
     } finally {
-      this.verifyRunningPods()
+      await this.verifyRunningPods()
     }
 
   }
@@ -168,7 +168,7 @@ export default class PodManager {
   }
 
   private async verifyRunningPods () {
-    const dbPods = await this.pods.getRunningPods()
+    const dbPods = this.pods.getRunningPods()
     log.debug(`dbPods=${dbPods}`)
     const runningPodsSet = new Set(await this.hyperClient.getPodList())
     const podsToDelete = dbPods.filter(pod => !runningPodsSet.has(pod))
