@@ -9,7 +9,8 @@
     "src/**/*.js",
     "src/**/*.js.map",
     "src/**/*.html",
-    "src/schemas/*.json"
+    "src/schemas/*.json",
+    "src/util/*.json"
   ],
   "scripts": {
     "build": "npm run schema-to-tsd && npm run compile-ts",
