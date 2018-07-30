@@ -33,8 +33,14 @@ export default class PodDatabase {
     return this.pods.get(id)
   }
 
-  public deletePod (id: string): void {
+  public async deletePod (id: string) {
     this.pods.delete(id)
+    await this.savePodsToDB()
+    log.debug(`deleted pod from db. id=${id}`)
+  }
+
+  public deletePods (pods: Array<string>): void {
+    pods.map(pod => this.deletePod(pod))
   }
 
   public getExpiredPods (): Array<string> {
@@ -60,7 +66,7 @@ export default class PodDatabase {
 
     // TODO: be more economical with saving pods
     info.expiry = addDuration(duration, info.expiry)
-    await this.codiusdb.savePods(Array.from(this.pods.values()))
+    await this.savePodsToDB()
 
     log.debug('added duration to pod. ' +
       `id=${info.id} ` +
@@ -75,7 +81,7 @@ export default class PodDatabase {
     }
 
     info.ip = ip
-    await this.codiusdb.savePods(Array.from(this.pods.values()))
+    await this.savePodsToDB()
 
     log.trace('set pod ip. ' +
       `id=${id} ` +
@@ -89,7 +95,7 @@ export default class PodDatabase {
     }
 
     info.port = Number(port)
-    await this.codiusdb.savePods(Array.from(this.pods.values()))
+    await this.savePodsToDB()
 
     log.trace('set pod port. ' +
       `id=${id} ` +
@@ -110,7 +116,7 @@ export default class PodDatabase {
     }
 
     this.pods.set(info.id, info)
-    await this.codiusdb.savePods(Array.from(this.pods.values()))
+    await this.savePodsToDB()
 
     log.debug('added pod. ' +
       `id=${info.id} ` +
@@ -129,6 +135,10 @@ export default class PodDatabase {
     }
 
     return new BigNumber(lifetimeUp)
+  }
+
+  private async savePodsToDB () {
+    await this.codiusdb.savePods(Array.from(this.pods.values()))
   }
 
   private async loadPodsFromDB () {

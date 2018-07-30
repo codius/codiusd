@@ -85,6 +85,28 @@ export default class HyperClient {
     return ip
   }
 
+  async getPodList (): Promise<Array<string>> {
+    if (this.config.noop) return ['']
+    const res = await axios.request({
+      socketPath: this.config.hyperSock,
+      method: 'get',
+      url: '/list?item=pod',
+      responseType: 'json'
+    })
+
+    const pods = res.data.podData.reduce((acc: Array<string>, hyperPod: string) => {
+      // hyperPod format is: hash:hash:vm-name:status, needs to be split to get the hash and its status
+      const podDataArr = hyperPod.split(':')
+      if (podDataArr.length !== 4) return acc
+      if (podDataArr[3] === 'running') {
+        return [...acc, podDataArr[0]]
+      }
+    }, [])
+
+    log.debug(`running pod list=${pods}`)
+    return pods
+  }
+
   async pullImages (podSpec: PodSpec): Promise<void> {
     if (this.config.noop) return
     for (const container of podSpec.containers) {
