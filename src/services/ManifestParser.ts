@@ -40,17 +40,20 @@ export class Manifest {
   }
 
   toPodSpec (): PodSpec {
+    let containerList = this.manifest['containers'].map(this.processContainer.bind(this))
+    if (this.manifest['moneyd'] && this.manifest['moneyd'] === true) {
+      containerList = containerList.concat([{
+        // Adds interledger access to this pod, listening on 7768
+        name: `${this.hash}_moneyd`,
+        image: 'codius/codius-moneyd@sha256:4c02fc168e6b4cfde90475ed3c3243de0bce4ca76b73753a92fb74bf5116deef',
+        envs: [{ env: 'CODIUS_SECRET', value: this.secret.hmac(this.hash) }]
+      }])
+    }
+
     return {
       id: this.hash,
       resource: this.machineToResource(this.manifest['machine']),
-      containers: this.manifest['containers']
-        .map(this.processContainer.bind(this))
-        .concat([{
-          // Adds interledger access to this pod, listening on 7768
-          name: `${this.hash}_moneyd`,
-          image: 'codius/codius-moneyd@sha256:4c02fc168e6b4cfde90475ed3c3243de0bce4ca76b73753a92fb74bf5116deef',
-          envs: [{ env: 'CODIUS_SECRET', value: this.secret.hmac(this.hash) }]
-        }])
+      containers: containerList
     }
   }
 
