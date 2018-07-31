@@ -17,7 +17,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function getIndex (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const hostInfo: HostInfo = serverInfo(config, podManager, peerDb)
     const freeMemRaw = hostInfo.serverFreeMemory
-    const formatFreeMem = (memory: number) => { return (memory % 1000000) > 0 ? (memory / 1000000).toString() + ' gigabytes' : (memory / 1000).toString() + ' megabytes' }
+    const formatFreeMem = (memory: number) => { return (Math.floor(memory / 1e9)) > 0 ? ((memory / 1000000000).toFixed(3)).toString() + ' gigabytes' : ((memory / 1000000).toFixed(3)).toString() + ' megabytes' }
     return h.view('index', {
       uri: hostInfo.uri,
       numPeers: hostInfo.numPeers,
