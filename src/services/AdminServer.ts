@@ -17,7 +17,6 @@ export default class AdminServer {
       port: this.config.adminPort,
       address: '127.0.0.1'
     })
-
     registerAdminController(this.server, deps)
   }
   async start () {

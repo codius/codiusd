@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+      "selfTestSuccess": {
+        "type": "boolean"
+      },
+      "uploadSuccess": {
+          "type": "boolean"
+      },
+      "httpSuccess": {
+          "type": "boolean"
+      },
+      "wsSuccess": {
+          "type": "boolean"
+      },
+      "running": {
+          "type": "boolean"
+      }
+  },
+  "required": [ ],
+  "additionalProperties": false
+}
