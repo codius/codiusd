@@ -98,7 +98,7 @@ sudo npm install -g codiusd
 #### CODIUS_ADDITIONAL_HOST_INFO
 * Type: Boolean
 * Description: Gives info about the host such as uptime, contracts currently running, monthly fee, etc. You can view this info at the /info endpoint, e.g. `codius.example.com/info`
-* Default: false
+* Default: true
 
 #### CODIUS_BOOTSTRAP_PEERS
 * Type: JSON Array
