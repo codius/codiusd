@@ -15,32 +15,30 @@ export default class SelfTestChecker {
         const selfTest = this.selfTest
         const config = this.config
 
+        if (selfTest.selfTestSuccess) {
+          return h.continue
+        }
+
         if (!selfTest) {
           log.error('self test stats missing from plugin context')
           throw Boom.badImplementation('self test stats missing from plugin context')
         }
 
-        if (!request.headers['authorization']) {
-          throw Boom.badRequest('Authorization header missing from request')
-        }
+        if (request.headers['authorization']) {
+          const token = request.headers['authorization'].split(' ')[1]
 
-        const token = request.headers['authorization'].split(' ')[1]
-
-        if (token === config.bearerToken) {
-          log.debug('Route authenticated using bearer token')
-          return h.continue
+          if (token === config.bearerToken) {
+            log.debug('Route authenticated using bearer token')
+            return h.continue
+          }
         }
 
         const stats = selfTest.getTestStats()
-        if (!stats.selfTestSuccess) {
-          return h.response({
-            message: stats.running ? 'Self Test Running' : 'Self Test Failed',
-            status: stats.selfTestSuccess,
-            stats: stats
-          }).code(503).takeover()
-        }
 
-        return h.continue
+        return h.response({
+          message: stats.running ? 'Self Test Running' : 'Self Test Failed',
+          stats: stats
+        }).code(503).takeover()
       })
     }
   }
