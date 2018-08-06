@@ -1,4 +1,6 @@
+import * as crypto from 'crypto'
 import { Injector } from 'reduct'
+import { SelfTestConfig } from '../schemas/SelfTestConfig'
 
 const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.justmoon.com',
@@ -22,6 +24,7 @@ function setPrice () {
 }
 
 export default class Config {
+  readonly bearerToken: string
   readonly hyperSock: string
   readonly noop: boolean
   readonly port: number
@@ -40,14 +43,15 @@ export default class Config {
   hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
-  readonly disableSelfTest: boolean
   selfTestSuccess: boolean
+  selfTestConfig: SelfTestConfig
 
   constructor (env: Injector | { [k: string]: string | undefined }) {
     // Load config from environment by default
     if (typeof env === 'function') {
       env = process.env
     }
+    this.bearerToken = crypto.randomBytes(32).toString('hex')
 
     this.devMode = env.CODIUS_DEV === 'true'
 
@@ -71,12 +75,15 @@ export default class Config {
       ? JSON.parse(env.CODIUS_BOOTSTRAP_PEERS)
       : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
-    this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO === 'true'
+    this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO ? env.CODIUS_ADDITIONAL_HOST_INFO === 'true' : true
     this.hostCurrency = 'XRP'
     this.hostAssetScale = 6
     this.hostCostPerMonth = setPrice()
-    this.disableSelfTest = env.CODIUS_DISABLE_SELF_TEST === 'true'
     this.selfTestSuccess = false
+    this.selfTestConfig = {
+      retryCount: Number(env.CODIUS_SELF_TEST_RETRIES) || 5,
+      retryInterval: Number(env.CODIUS_SELF_TEST_INTERVAL) * 1000 || 5000
+    }
     // Admin API Config
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+      "retryInterval": {
+          "type": "number"
+      },
+      "retryCount": {
+          "type": "number"
+      }
+  },
+  "required": [ "retryInterval", "retryCount" ],
+  "additionalProperties": false
+}

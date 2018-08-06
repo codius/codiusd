@@ -28,6 +28,9 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function getPodInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    if (!request.query['id']) {
+      throw Boom.badRequest('missing manifestHash')
+    }
     log.debug('Querying pod info for: ', request.query['id'])
     return podDatabase.getPod(request.query['id'])
   }
