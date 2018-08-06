@@ -1,8 +1,8 @@
 {
   "name": "codiusd",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Codius Host Software",
-  "homepage": "https://codius.org",
+  "homepage": "https://github.com/codius/codiusd#readme",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "files": [
@@ -43,7 +43,6 @@
   "bugs": {
     "url": "https://github.com/codius/codiusd/issues"
   },
-  "homepage": "https://github.com/codius/codiusd#readme",
   "dependencies": {
     "@sharafian/cog": "0.0.5",
     "@types/handlebars": "^4.0.38",
