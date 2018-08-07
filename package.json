@@ -1,6 +1,6 @@
 {
   "name": "codiusd",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Codius Host Software",
   "homepage": "https://github.com/codius/codiusd#readme",
   "main": "src/index.js",
