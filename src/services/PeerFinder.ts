@@ -1,5 +1,5 @@
 import { Injector } from 'reduct'
-import Config from './Config'
+import SelfTest from './SelfTest'
 import PeerDatabase from './PeerDatabase'
 import Identity from './Identity'
 import { sampleSize } from 'lodash'
@@ -13,12 +13,12 @@ const PEERS_PER_QUERY = 5
 export default class PeerFinder {
   private peerDb: PeerDatabase
   private identity: Identity
-  private config: Config
+  private selfTest: SelfTest
 
   constructor (deps: Injector) {
     this.peerDb = deps(PeerDatabase)
     this.identity = deps(Identity)
-    this.config = deps(Config)
+    this.selfTest = deps(SelfTest)
   }
 
   start () {
@@ -27,7 +27,7 @@ export default class PeerFinder {
   }
 
   async run () {
-    if (this.config.selfTestSuccess) {
+    if (this.selfTest.selfTestSuccess) {
       log.debug('searching peers')
       const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
       log.trace('peers', queryPeers)
