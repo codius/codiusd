@@ -52,6 +52,7 @@
     "axios": "^0.18.0",
     "bignumber.js": "^7.2.1",
     "canonical-json": "0.0.4",
+    "codius-manifest": "2.2.3",
     "debug": "^3.1.0",
     "encoding-down": "^5.0.3",
     "enjoi": "^3.2.3",

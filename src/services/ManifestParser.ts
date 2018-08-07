@@ -2,10 +2,8 @@ import { PodSpec } from '../schemas/PodSpec'
 import { Injector } from 'reduct'
 import Config from './Config'
 import Secret from './Secret'
-import ManifestHash from './ManifestHash'
-import { createHash } from 'crypto'
 import * as Boom from 'boom'
-const canonicalJson = require('canonical-json')
+const { hashManifest, generateSimpleManifest } = require('codius-manifest')
 
 export interface ManifestOptions {
   deps: Injector
@@ -35,15 +33,24 @@ export class Manifest {
     this.manifest = opts.manifest
     this.secret = opts.deps(Secret)
     this.config = opts.deps(Config)
-    this.hash = opts.deps(ManifestHash).hashManifest(this.manifest)
+    this.hash = hashManifest(this.manifest)
     this.privateManifest = opts.privateManifest
   }
 
   toPodSpec (): PodSpec {
+    let simpleManifest
+    try {
+      simpleManifest = generateSimpleManifest({
+        manifest: this.manifest,
+        private: this.privateManifest || {}
+      })
+    } catch (err) {
+      throw Boom.badData(err)
+    }
     return {
       id: this.hash,
       resource: this.machineToResource(this.manifest['machine']),
-      containers: this.manifest['containers']
+      containers: simpleManifest['manifest']['containers']
         .map(this.processContainer.bind(this))
         .concat([{
           // Adds interledger access to this pod, listening on 7768
@@ -88,62 +95,13 @@ export class Manifest {
     if (!environment) return hostEnv
 
     const manifestEnv = Object.keys(environment).map((key) => {
-      if (key.startsWith('CODIUS')) {
-        throw Boom.badData('environment variables starting in ' +
-          '"CODIUS" are reserved. ' +
-          `var=${key}`)
-      }
-
       return {
         env: key,
-        value: this.processValue(environment[key])
+        value: environment[key]
       }
     })
 
     return ([] as Array<Env>).concat(hostEnv, manifestEnv)
-  }
-
-  processValue (value: string): string {
-    if (!value.startsWith('$')) return value
-
-    const varName = value.substring(1)
-    const varSpec = this.manifest['vars'] && this.manifest['vars'][varName]
-    const privateVarSpec = this.privateManifest['vars'] &&
-      this.privateManifest['vars'][varName]
-
-    if (!varSpec) {
-      throw Boom.badData('could not interpolate var. ' +
-        `var=${value} ` +
-        `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
-    }
-
-    if (!varSpec.encoding) {
-      return varSpec.value
-    }
-
-    if (varSpec.encoding === 'private:sha256') {
-      if (!privateVarSpec) {
-        throw Boom.badData('could not interpolate private var. ' +
-          `var=${value} ` +
-          `manifest.vars=${JSON.stringify(this.manifest['vars'])}`)
-      }
-
-      const hashPrivateVar = createHash('sha256')
-        .update(canonicalJson(privateVarSpec))
-        .digest('hex')
-
-      if (hashPrivateVar !== varSpec.value) {
-        throw Boom.badData('private var does not match hash. ' +
-          `var=${value} ` +
-          `encoding=${varSpec.encoding} ` +
-          `public-hash=${varSpec.value} ` +
-          `hashed-value=${hashPrivateVar}`)
-      }
-
-      return privateVarSpec.value
-    }
-
-    throw Boom.badData('unknown var encoding. var=' + JSON.stringify(varSpec))
   }
 }
 
