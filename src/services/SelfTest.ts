@@ -191,6 +191,7 @@ export default class SelfTest {
           throw new Error('One or more components of Self Test have failed.')
         }
       } else {
+        this.uploadSuccess = false
         const resJson = await response.json()
         throw new Error(`Self Test failed. Could not upload pod successfully due to: ${resJson.error}`)
       }
