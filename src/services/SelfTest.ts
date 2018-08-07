@@ -83,7 +83,7 @@ export default class SelfTest {
         await new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve()
-          }, 10000)
+          }, this.testConfig.retryInterval)
         })
 
         // Wrap these in functions so we can resolve them later on.
@@ -181,12 +181,6 @@ export default class SelfTest {
         } catch (err) {
           log.error('Error occurred while testing WebSockets err=', err)
         }
-
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve()
-          }, this.testConfig.retryInterval)
-        })
 
         this.selfTestSuccess = this.wsSuccess && this.uploadSuccess && this.httpSuccess
         this.running = false
