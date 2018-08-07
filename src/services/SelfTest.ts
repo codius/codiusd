@@ -127,9 +127,9 @@ export default class SelfTest {
           } catch (err) {
             log.error('Error occurred while uploading self-test pod err=', err)
             await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve()
-                }, this.testConfig.retryInterval)
+              setTimeout(() => {
+                resolve()
+              }, this.testConfig.retryInterval)
             })
           }
           if (this.httpSuccess) {
