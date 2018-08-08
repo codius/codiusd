@@ -25,4 +25,6 @@ export interface Manifest {
     };
   };
   debug?: boolean;
+  unlisted?: boolean;
+  privateManifest?: boolean;
 }

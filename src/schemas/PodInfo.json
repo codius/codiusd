@@ -24,6 +24,9 @@
     },
     "totalUptime": {
       "type": "number"
+    },
+    "unlisted": {
+      "type": "boolean"
     }
   },
   "required": [ "id", "running", "start", "expiry", "totalUptime" ],
