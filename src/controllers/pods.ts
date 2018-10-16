@@ -54,10 +54,10 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function addProfit (amount: BigNumber.Value): Promise<void> {
     if (profit === undefined) {
-      profit = await codiusdb.getProfit()
+      profit = await codiusdb.getProfit(ildcp.getAssetCode(), ildcp.getAssetScale())
     }
     profit = profit.plus(amount)
-    await codiusdb.setProfit(profit)
+    await codiusdb.setProfit(ildcp.getAssetCode(), ildcp.getAssetScale(), profit)
   }
 
   async function chargeForDuration (request: any): Promise<string> {

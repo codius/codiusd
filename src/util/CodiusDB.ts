@@ -8,11 +8,51 @@ import encode from 'encoding-down'
 import { Injector } from 'reduct'
 import BigNumber from 'bignumber.js'
 import Config from '../services/Config'
+import streamToPromise = require('stream-to-promise')
 
 const PEERS_KEY = 'codiusPeers'
 const PODS_KEY = 'codiusPods'
 const MANIFEST_KEY = 'codiusManifests'
 const PROFIT_KEY = 'codiusProfit'
+
+interface StreamData {
+  key: string
+  value: string
+}
+
+interface Asset {
+  code: string
+  scale: number
+}
+
+const legacyDefaultAsset = {
+  code: 'XRP',
+  scale: 6
+}
+
+function profitKey (assetCode: string, assetScale: number): string {
+  if (assetCode === legacyDefaultAsset.code && assetScale === legacyDefaultAsset.scale) {
+    return PROFIT_KEY
+  }
+  return PROFIT_KEY + ':' + assetCode + ':' + assetScale
+}
+
+function parseProfitKey (key: string): Asset {
+  const keyParts = key.split(':')
+  if (keyParts[0] !== PROFIT_KEY) {
+    throw new Error('parseProfitKey invalid profit key for key=' + key)
+  }
+  if (keyParts.length === 1) {
+    return legacyDefaultAsset
+  } else if (keyParts.length !== 3) {
+    throw new Error('parseProfitKey invalid profit key for key=' + key)
+  } else {
+    return {
+      code: keyParts[1],
+      scale: parseInt(keyParts[2], 10)
+    }
+  }
+}
 
 export default class CodiusDB {
   private config: Config
@@ -30,7 +70,7 @@ export default class CodiusDB {
     this.db = levelup(encode(backend, { valueEncoding: 'json' }))
   }
 
-  // Manifest Methds
+  // Manifest Methods
   async getManifest (hash: string): Promise<Manifest | void> {
     return this.get(MANIFEST_KEY + ':' + hash)
   }
@@ -69,18 +109,47 @@ export default class CodiusDB {
     await this.delete(PEERS_KEY)
   }
 
-  async getProfit (): Promise<BigNumber> {
-    const profit = await this.loadValue(PROFIT_KEY, new BigNumber(0))
+  async getProfit (assetCode: string, assetScale: number): Promise<BigNumber> {
+    const profit = await this.loadValue(profitKey(assetCode, assetScale), '0')
     return new BigNumber(profit)
   }
 
-  async setProfit (_profit: BigNumber.Value): Promise<void> {
-    const profit = new BigNumber(_profit)
-    await this.saveValue(PROFIT_KEY, profit.toString())
+  async getProfits (): Promise<Object> {
+    const profits = {}
+    await this.createReadStream({
+      gte: PROFIT_KEY,
+      lt: PROFIT_KEY + ':~'
+    }, function (data: StreamData) {
+      const asset = parseProfitKey(data.key)
+      if (!profits[asset.code]) {
+        profits[asset.code] = {}
+      }
+      profits[asset.code][asset.scale.toString()] = new BigNumber(data.value)
+    })
+    return profits
   }
 
-  async deleteProfit (): Promise<void> {
-    await this.delete(PROFIT_KEY)
+  async setProfit (assetCode: string, assetScale: number, _profit: BigNumber.Value): Promise<void> {
+    const profit = new BigNumber(_profit)
+    await this.saveValue(profitKey(assetCode, assetScale), profit.toString())
+  }
+
+  async deleteProfit (assetCode: string, assetScale: number): Promise<void> {
+    await this.delete(profitKey(assetCode, assetScale))
+  }
+
+  async deleteProfits (): Promise<void> {
+    const keys: string[] = []
+    await this.createReadStream({
+      gte: PROFIT_KEY,
+      lt: PROFIT_KEY + ':~',
+      values: false
+    }, function (key: string) {
+      keys.push(key)
+    })
+    for (let key of keys) {
+      await this.delete(key)
+    }
   }
 
   // Save and Load serialized values
@@ -121,5 +190,11 @@ export default class CodiusDB {
 
   private async delete (key: string) {
     await this.db.del(key)
+  }
+
+  private async createReadStream (options: {}, callback: (...args: any[]) => void): Promise<void> {
+    const stream = this.db.createReadStream(options)
+    stream.on('data', callback)
+    await streamToPromise(stream)
   }
 }

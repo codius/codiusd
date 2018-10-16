@@ -4,6 +4,7 @@ import Config from '../services/Config'
 import Ildcp from '../services/Ildcp'
 import PodDatabase from '../services/PodDatabase'
 import CodiusDB from '../util/CodiusDB'
+import BigNumber from 'bignumber.js'
 import { Injector } from 'reduct'
 const Enjoi = require('enjoi')
 const ConfigUpdate = require('../schemas/ConfigUpdate.json')
@@ -39,13 +40,22 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
-    const profitRaw = await codiusdb.getProfit()
-    const profit = profitRaw.shiftedBy(-ildcp.getAssetScale())
+    const profitsRaw = await codiusdb.getProfits()
+    const profits = {}
+    profits[ildcp.getAssetCode()] = new BigNumber(0)
 
+    Object.keys(profitsRaw).forEach((assetCode: string) => {
+      profits[assetCode] = new BigNumber(0)
+      Object.keys(profitsRaw[assetCode]).forEach((assetScaleStr: string) => {
+        const assetScale = parseInt(assetScaleStr, 10)
+        const profit = profitsRaw[assetCode][assetScaleStr].shiftedBy(-assetScale)
+        profits[assetCode] = profits[assetCode].plus(profit)
+      })
+      profits[assetCode] = profits[assetCode].toString()
+    })
     return {
       aggregate_pod_uptime: uptime.toString(),
-      aggregate_earnings: profit.toString(),
-      currency: ildcp.getAssetCode()
+      aggregate_earnings: profits
     }
   }
 
