@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+      "clientAddress": {
+          "type": "string"
+      },
+      "assetCode": {
+          "type": "string"
+      },
+      "assetScale": {
+          "type": "number"
+      }
+  },
+  "required": [ "clientAddress", "assetCode", "assetScale" ],
+  "additionalProperties": false
+}

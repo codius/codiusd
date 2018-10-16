@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import { IldcpInfo } from '../schemas/IldcpInfo'
 import { Injector } from 'reduct'
 import { SelfTestConfig } from '../schemas/SelfTestConfig'
 
@@ -37,9 +38,8 @@ export default class Config {
   readonly ilpPlugin: string | void
   readonly ilpCredentials: string | void
   readonly devMode: boolean
+  readonly devIldcp: IldcpInfo
   readonly showAdditionalHostInfo: boolean
-  readonly hostCurrency: string
-  readonly hostAssetScale: number
   hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
@@ -53,12 +53,12 @@ export default class Config {
     }
     this.bearerToken = crypto.randomBytes(32).toString('hex')
 
-    this.devMode = env.CODIUS_DEV === 'true'
+    this.devMode = env.CODIUS_DEV === 'true' || env.NODE_ENV === 'test'
 
     this.port = Number(env.CODIUS_PORT) || 3000
     if (env.CODIUS_PUBLIC_URI) {
       this.publicUri = env.CODIUS_PUBLIC_URI
-    } else if (this.devMode || env.NODE_ENV === 'test') {
+    } else if (this.devMode) {
       this.publicUri = ('http://local.codius.org:' + this.port)
     } else {
       throw new Error('Codiusd requires CODIUS_PUBLIC_URI to be set')
@@ -76,8 +76,11 @@ export default class Config {
       : DEFAULT_BOOTSTRAP_PEERS
     this.maxMemoryFraction = Number(env.CODIUS_MAX_MEMORY_FRACTION) || 0.75
     this.showAdditionalHostInfo = env.CODIUS_ADDITIONAL_HOST_INFO ? env.CODIUS_ADDITIONAL_HOST_INFO === 'true' : true
-    this.hostCurrency = 'XRP'
-    this.hostAssetScale = 6
+    this.devIldcp = {
+      clientAddress: 'dev.client',
+      assetCode: 'DEV',
+      assetScale: 3
+    }
     this.hostCostPerMonth = setPrice()
     this.selfTestSuccess = false
     this.selfTestConfig = {

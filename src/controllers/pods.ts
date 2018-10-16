@@ -5,6 +5,7 @@ import { Injector } from 'reduct'
 import { PodRequest } from '../schemas/PodRequest'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from '../services/Config'
+import Ildcp from '../services/Ildcp'
 import PodManager from '../services/PodManager'
 import { checkMemory } from '../util/podResourceCheck'
 import { getCurrencyPerSecond } from '../util/priceRate'
@@ -32,6 +33,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   const manifestDatabase = deps(ManifestDatabase)
   const manifestParser = deps(ManifestParser)
   const config = deps(Config)
+  const ildcp = deps(Ildcp)
   const codiusdb = deps(CodiusDB)
   let profit: BigNumber | undefined
 
@@ -61,7 +63,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function chargeForDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
 
-    const currencyPerSecond = getCurrencyPerSecond(config)
+    const currencyPerSecond = getCurrencyPerSecond(config, ildcp)
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
     log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
 
@@ -163,7 +165,7 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
     const duration = request.query['duration'] || 3600
-    const currencyPerSecond = getCurrencyPerSecond(config)
+    const currencyPerSecond = getCurrencyPerSecond(config, ildcp)
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
     log.debug('got pod options request. duration=' + duration + ' price=' + price.toString())
     const podSpec = manifestParser.manifestToPodSpec(

@@ -4,6 +4,7 @@ import { serverInfo } from '../util/serverInfo'
 import PeerDatabase from '../services/PeerDatabase'
 import PodManager from '../services/PodManager'
 import Config from '../services/Config'
+import Ildcp from '../services/Ildcp'
 import Version from '../services/Version'
 import SelfTest from '../services/SelfTest'
 import { HostInfo } from '../schemas/HostInfo'
@@ -13,11 +14,12 @@ export default function (server: Hapi.Server, deps: Injector) {
   const podManager = deps(PodManager)
 
   const config = deps(Config)
+  const ildcp = deps(Ildcp)
   const selfTest = deps(SelfTest)
   const ver = deps(Version)
 
   async function getIndex (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const hostInfo: HostInfo = serverInfo(config, podManager, peerDb, selfTest)
+    const hostInfo: HostInfo = serverInfo(config, ildcp, podManager, peerDb, selfTest)
     const freeMemRaw = hostInfo.serverFreeMemory
     const formatFreeMem = (memory: number) => { return (Math.floor(memory / 1e9)) > 0 ? ((memory / 1000000000).toFixed(3)).toString() + ' gigabytes' : ((memory / 1000000).toFixed(3)).toString() + ' megabytes' }
     return h.view('index', {

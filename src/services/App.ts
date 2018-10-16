@@ -7,6 +7,7 @@ import HttpServer from './HttpServer'
 import AdminServer from './AdminServer'
 import BackgroundValidatePeers from './BackgroundValidatePeers'
 import Secret from './Secret'
+import Ildcp from './Ildcp'
 import Money from './Money'
 import SelfTest from './SelfTest'
 
@@ -20,6 +21,7 @@ export default class App {
   private adminServer: AdminServer
   private podManager: PodManager
   private secret: Secret
+  private ildcp: Ildcp
   private money: Money
   private backgroundValidatePeers: BackgroundValidatePeers
   private selfTest: SelfTest
@@ -33,6 +35,7 @@ export default class App {
     this.adminServer = deps(AdminServer)
     this.podManager = deps(PodManager)
     this.secret = deps(Secret)
+    this.ildcp = deps(Ildcp)
     this.money = deps(Money)
     this.backgroundValidatePeers = deps(BackgroundValidatePeers)
     this.selfTest = deps(SelfTest)
@@ -40,6 +43,7 @@ export default class App {
 
   async start () {
     log.info('starting codiusd...')
+    await this.ildcp.init()
     if (!this.config.devMode) {
       await this.secret.load()
       await this.money.start()

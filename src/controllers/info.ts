@@ -5,6 +5,7 @@ import PodManager from '../services/PodManager'
 import PeerDatabase from '../services/PeerDatabase'
 import { freeMem, serverInfo } from '../util/serverInfo'
 import Config from '../services/Config'
+import Ildcp from '../services/Ildcp'
 import SelfTest from '../services/SelfTest'
 import { HostInfo } from '../schemas/HostInfo'
 
@@ -15,6 +16,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   const selfTest = deps(SelfTest)
 
   const config = deps(Config)
+  const ildcp = deps(Ildcp)
 
   async function getMemory (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
@@ -23,7 +25,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function infoHandler (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const infoResp: HostInfo = serverInfo(config, podManager, peerDb, selfTest)
+    const infoResp: HostInfo = serverInfo(config, ildcp, podManager, peerDb, selfTest)
     if (config.showAdditionalHostInfo) {
       infoResp.runningContracts = podDatabase.getRunningPods().length
       // TODO: add other relevant information like number of running pods, average uptime per pod...

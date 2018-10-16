@@ -1,28 +1,25 @@
 import { Injector } from 'reduct'
 import { randomBytes } from 'crypto'
 import Config from './Config'
+import Ildcp from './Ildcp'
 import * as path from 'path'
-import * as ILDCP from 'ilp-protocol-ildcp'
 import spawn from '../util/spawn'
 
 import { create as createLogger } from '../common/log'
 const log = createLogger('Money')
-const makePlugin = require('ilp-plugin')
 const Connector = require('ilp-connector')
 
 export default class Money {
   private config: Config
   private connector: any
+  private ildcp: Ildcp
 
   constructor (deps: Injector) {
     this.config = deps(Config)
+    this.ildcp = deps(Ildcp)
   }
 
   async start () {
-    log.debug('fetching dcp information')
-    const dcpPlugin = makePlugin()
-    await dcpPlugin.connect()
-    const info = await ILDCP.fetch(dcpPlugin.sendData.bind(dcpPlugin))
 
     // TODO: how many bytes to avoid collision on local machine
     // while not having a crazy long ILP address
@@ -41,13 +38,13 @@ export default class Money {
       store: 'leveldown',
       storePath,
       initialConnectTimeout: 60000,
-      env: prefixToEnv(info.clientAddress),
+      env: prefixToEnv(this.ildcp.getAddress()),
       accounts: {
         parent: {
           relation: 'parent',
           plugin,
-          assetCode: info.assetCode,
-          assetScale: info.assetScale,
+          assetCode: this.ildcp.getAssetCode(),
+          assetScale: this.ildcp.getAssetScale(),
           sendRoutes: false,
           receiveRoutes: false,
           options
@@ -55,8 +52,8 @@ export default class Money {
         child: {
           relation: 'child',
           plugin: 'ilp-plugin-mini-balances',
-          assetCode: info.assetCode,
-          assetScale: info.assetScale,
+          assetCode: this.ildcp.getAssetCode(),
+          assetScale: this.ildcp.getAssetScale(),
           options: {
             wsOpts: {
               host: '169.254.77.68',

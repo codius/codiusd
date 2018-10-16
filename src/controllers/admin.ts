@@ -1,6 +1,7 @@
 import * as Hapi from 'hapi'
 import * as Boom from 'boom'
 import Config from '../services/Config'
+import Ildcp from '../services/Ildcp'
 import PodDatabase from '../services/PodDatabase'
 import CodiusDB from '../util/CodiusDB'
 import { Injector } from 'reduct'
@@ -14,6 +15,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   const podDatabase = deps(PodDatabase)
   const config = deps(Config)
   const codiusdb = deps(CodiusDB)
+  const ildcp = deps(Ildcp)
 
   async function getAdminInfo (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     return {
@@ -38,12 +40,12 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function getAllUptime (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const uptime = podDatabase.getLifetimePodsUptime()
     const profitRaw = await codiusdb.getProfit()
-    const profit = profitRaw.shiftedBy(-config.hostAssetScale)
+    const profit = profitRaw.shiftedBy(-ildcp.getAssetScale())
 
     return {
       aggregate_pod_uptime: uptime.toString(),
       aggregate_earnings: profit.toString(),
-      currency: config.hostCurrency
+      currency: ildcp.getAssetCode()
     }
   }
 

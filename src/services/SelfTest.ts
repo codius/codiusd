@@ -1,5 +1,6 @@
 import { Injector } from 'reduct'
 import Config from './Config'
+import Ildcp from './Ildcp'
 import { SelfTestConfig } from '../schemas/SelfTestConfig'
 import { SelfTestStats } from '../schemas/SelfTestStats'
 import { create as createLogger } from '../common/log'
@@ -16,10 +17,12 @@ export default class SelfTest {
   private wsSuccess: boolean
   private running: boolean
   private config: Config
+  private ildcp: Ildcp
   private testConfig: SelfTestConfig
 
   constructor (deps: Injector) {
     this.config = deps(Config)
+    this.ildcp = deps(Ildcp)
     this.selfTestSuccess = false
     this.uploadSuccess = false
     this.httpSuccess = false
@@ -51,7 +54,7 @@ export default class SelfTest {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      maxPrice: (this.config.hostCostPerMonth * Math.pow(10, this.config.hostAssetScale)).toString(),
+      maxPrice: (this.config.hostCostPerMonth * Math.pow(10, this.ildcp.getAssetScale())).toString(),
       method: 'POST',
       body: JSON.stringify(manifestJson),
       timeout: 70000 // 1m10s
