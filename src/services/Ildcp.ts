@@ -23,6 +23,7 @@ export default class Ildcp {
       const dcpPlugin = makePlugin()
       await dcpPlugin.connect()
       this.info = await ILDCP.fetch(dcpPlugin.sendData.bind(dcpPlugin))
+      await dcpPlugin.disconnect()
     }
   }
 
