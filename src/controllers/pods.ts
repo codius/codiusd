@@ -67,11 +67,16 @@ export default function (server: Hapi.Server, deps: Injector) {
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
     log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
 
+    await chargeForRequest(request, price)
+
+    return duration
+  }
+
+  async function chargeForRequest (request:any, price: BigNumber.Value): Promise<void> {
     const stream = request.ilpStream()
     try {
       await stream.receiveTotal(price)
     } catch (e) {
-      // TODO: use logger module
       log.error('error receiving payment. error=' + e.message)
       throw Boom.paymentRequired('Failed to get payment before timeout')
     } finally {
@@ -79,8 +84,6 @@ export default function (server: Hapi.Server, deps: Injector) {
         log.error('errors updating profit. error=' + err.message)
       })
     }
-
-    return duration
   }
 
   // TODO: how to add plugin decorate functions to Hapi.Request type
@@ -164,6 +167,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
+    await chargeForRequest(request, new BigNumber(0))
     const duration = request.query['duration'] || 3600
     const currencyPerSecond = getCurrencyPerSecond(config, ildcp)
     const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)

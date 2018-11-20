@@ -44,7 +44,7 @@
     "url": "https://github.com/codius/codiusd/issues"
   },
   "dependencies": {
-    "@sharafian/cog": "0.0.5",
+    "@sharafian/cog": "^0.1.1",
     "@types/handlebars": "^4.0.38",
     "@types/inert": "^5.1.1",
     "@types/stream-to-promise": "^2.2.0",
