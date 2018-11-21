@@ -72,7 +72,7 @@ export default function (server: Hapi.Server, deps: Injector) {
     return duration
   }
 
-  async function chargeForRequest (request:any, price: BigNumber.Value): Promise<void> {
+  async function chargeForRequest (request: any, price: BigNumber.Value): Promise<void> {
     const stream = request.ilpStream()
     try {
       await stream.receiveTotal(price)
