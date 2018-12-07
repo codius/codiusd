@@ -28,7 +28,7 @@ export default class PeerFinder {
 
   async run () {
     if (this.selfTest.selfTestSuccess) {
-      log.debug('searching peers')
+      log.trace('searching peers')
       const queryPeers = sampleSize(this.peerDb.getPeers(), PEERS_PER_QUERY)
       log.trace('peers', queryPeers)
       for (const peer of queryPeers) {
