@@ -6,10 +6,10 @@ import { SelfTestConfig } from '../schemas/SelfTestConfig'
 const DEFAULT_BOOTSTRAP_PEERS = [
   'https://codius.justmoon.com',
   'https://codius.andros-connector.com',
-  'https://codius.africa',
   'https://codius.risky.business',
   'https://codius.feraltc.com',
-  'https://codius.tinypolarbear.com'
+  'https://codius.tinypolarbear.com',
+  'https://x1.codiushost.com'
 ]
 
 function setPrice () {
