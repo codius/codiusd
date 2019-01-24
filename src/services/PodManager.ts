@@ -1,8 +1,11 @@
 // import axios from 'axios'
 import * as Boom from 'boom'
 import { Injector } from 'reduct'
+import { createConnection } from 'ilp-protocol-stream'
+import { getCurrencyPerSecond } from '../util/priceRate'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from './Config'
+import Ildcp from './Ildcp'
 import HyperClient from './HyperClient'
 import PodDatabase from './PodDatabase'
 import ManifestDatabase from './ManifestDatabase'
@@ -22,6 +25,9 @@ import {
   iptablesIdempotent as iptables
 } from '../util/iptables'
 import { create as createLogger } from '../common/log'
+import BigNumber from 'bignumber.js'
+const makePlugin = require('ilp-plugin')
+const SPSP = require('ilp-protocol-spsp')
 const log = createLogger('PodManager')
 
 const DEFAULT_INTERVAL = 5000
@@ -32,6 +38,7 @@ export default class PodManager {
   private manifests: ManifestDatabase
   private hyperClient: HyperClient
   private config: Config
+  private ildcp: Ildcp
 
   constructor (deps: Injector) {
     this.pods = deps(PodDatabase)
@@ -39,6 +46,7 @@ export default class PodManager {
     this.hyper = deps(HyperClient)
     this.hyperClient = deps(HyperClient)
     this.config = deps(Config)
+    this.ildcp = deps(Ildcp)
   }
 
   public checkPodMem (memory: number | void): number {
@@ -68,20 +76,32 @@ export default class PodManager {
     }
 
     await Promise.all(expired.map(async pod => {
-      log.debug('cleaning up pod. id=' + pod)
-      try {
-        await this.hyperClient.deletePod(pod)
-        await this.manifests.deleteManifest(pod)
-      } catch (e) {
-        log.error('error cleaning up pod. ' +
-          `id=${pod} ` +
-          `error=${e.message}`)
-      }
 
-      await this.pods.deletePod(pod)
+      const podInfo = await this.pods.getPod(pod)
+      if (podInfo){
+        if (podInfo.pullPointer) {
+          await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod)
+        } else {
+          await this.cleanup(pod);
+        }
+      } 
     }))
 
     setTimeout(this.run.bind(this), DEFAULT_INTERVAL)
+  }
+
+  private async cleanup(pod: string) {
+    log.debug('cleaning up pod. id=' + pod);
+    try {
+      await this.hyperClient.deletePod(pod);
+      await this.manifests.deleteManifest(pod);
+    }
+    catch (e) {
+      log.error('error cleaning up pod. ' +
+        `id=${pod} ` +
+        `error=${e.message}`);
+    }
+    await this.pods.deletePod(pod);
   }
 
   public getMemoryUsed () {
@@ -96,22 +116,67 @@ export default class PodManager {
     return memory
   }
 
-  async startPod (podSpec: PodSpec, duration: string, port?: string) {
+  async startPod (podSpec: PodSpec, duration: string, pullPointer: string, port?: string) {
     if (this.pods.getPod(podSpec.id)) {
-      const isRunning = await this.hyperClient.getPodInfo(podSpec.id)
-        .then(info => !!info)
-        .catch(() => false)
-      if (isRunning) {
-        await this.pods.addDurationToPod(podSpec.id, duration)
-        return
-      }
+      Boom.conflict('pod already exists')
+      // const isRunning = await this.hyperClient.getPodInfo(podSpec.id)
+      //   .then(info => !!info)
+      //   .catch(() => false)
+      // if (isRunning) {
+      //   await this.pods.addDurationToPod(podSpec.id, duration)
+      //   return
+      // }
     }
 
+    if (pullPointer !== ''){
+      try {
+        this.pull(podSpec.id, pullPointer, this.addPod, podSpec, port)
+      } catch (err) {
+        log.error(`run pod failed, error=${err.message}`)
+        throw Boom.badImplementation('run pod failed')
+      } 
+    } else {
+      await this.addPod(podSpec.id, podSpec, duration, pullPointer, port)
+    }
+  }
+  
+  private async pull(id: string, pullPointer: string, callback: any, podSpec?: PodSpec, port?: string) {
+    // should be replaced with SPSP.pull once that is integrated
+    const plugin = makePlugin()
+    await plugin.connect()
+    const response = await SPSP.query(pullPointer)
+
+    if (response.contentType.indexOf('application/spsp4+json') !== -1) {
+      const ilpConn = await createConnection({
+        plugin,
+        destinationAccount: response.destinationAccount,
+        sharedSecret: response.sharedSecret,
+      })
+
+      await ilpConn.on('stream', (stream: any) => {
+        stream.setReceiveMax(response.pullBalance.available)
+
+        stream.on('money', async (amount: any) => {
+          if (amount > 0) {
+            const currencyPerSecond = getCurrencyPerSecond(this.config, this.ildcp);
+            const duration = new BigNumber(amount).div(currencyPerSecond)
+            await callback({ id: id, duration: duration, pullPointer: pullPointer, podSpec: podSpec, port: port })
+          } else {
+            await this.cleanup(id)
+          }
+        })
+      })
+      return new Promise(resolve => ilpConn.on('end', resolve))  
+    }
+  }
+
+  private async addPod (id: string, podSpec: PodSpec, duration: string, pullPointer: string, port?: string) {
     try {
       await this.pods.addPod({
         id: podSpec.id,
         running: true,
         duration,
+        pullPointer,
         memory: checkMemory(podSpec.resource)
       })
 
@@ -130,7 +195,6 @@ export default class PodManager {
     } finally {
       await this.verifyRunningPods()
     }
-
   }
 
   async getLogStream (podId: string, follow: boolean = false) {

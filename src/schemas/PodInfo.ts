@@ -13,4 +13,5 @@ export interface PodInfo {
   ip?: string;
   memory?: number;
   totalUptime: number;
+  pullPointer?: string;
 }

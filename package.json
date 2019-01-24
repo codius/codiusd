@@ -67,6 +67,7 @@
     "ilp-plugin-mini-balances": "^1.0.3",
     "ilp-price": "^1.0.1",
     "ilp-protocol-ildcp": "^1.0.0",
+    "ilp-protocol-spsp": "^2.2.0",
     "inert": "^5.1.0",
     "leveldown": "^4.0.1",
     "levelup": "^3.0.1",

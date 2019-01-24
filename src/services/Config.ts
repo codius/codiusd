@@ -24,6 +24,20 @@ function setPrice () {
   return 10
 }
 
+function setFrequency (frequency: string, interval: number) {
+  if (frequency === 'DAY') {
+    return interval * 86400
+  } else if (frequency === 'WEEK') {
+    return interval * 604800
+  } else if (frequency === 'MONTH') {
+    return interval * 2592000
+  } else if (frequency === 'YEAR') {
+    return interval * 31536000
+  } else {
+    throw new Error ('Codiusd requires valid FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
+  }
+}
+
 export default class Config {
   readonly bearerToken: string
   readonly hyperSock: string
@@ -40,6 +54,10 @@ export default class Config {
   readonly devMode: boolean
   readonly devIldcp: IldcpInfo
   readonly showAdditionalHostInfo: boolean
+  readonly pull: boolean
+  readonly frequency: string | void
+  readonly frequencyInterval: number | void
+  readonly frequencySeconds: number | void
   hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
@@ -91,5 +109,11 @@ export default class Config {
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
 
+    this.pull = env.PULL === 'true'
+    if (this.pull) {
+      this.frequency = (env.FREQUENCY || 'MONTH').toUpperCase()
+      this.frequencyInterval = Number(env.INTERVAL) || 1
+      this.frequencySeconds = setFrequency(this.frequency, this.frequencyInterval)
+    }
   }
 }

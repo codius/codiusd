@@ -16,6 +16,7 @@ export interface AddPodParams {
   id: string,
   running: boolean,
   duration: string,
+  pullPointer: string,
   memory: number
 }
 
@@ -112,7 +113,8 @@ export default class PodDatabase {
       start: new Date().toISOString(),
       expiry: addDuration(params.duration),
       memory: params.memory,
-      totalUptime: uptime
+      totalUptime: uptime, 
+      pullPointer: params.pullPointer
     }
 
     this.pods.set(info.id, info)
@@ -122,6 +124,7 @@ export default class PodDatabase {
       `id=${info.id} ` +
       `running=${info.running} ` +
       `duration=${params.duration} ` +
+      `pullPointer=${params.duration} ` +
       `expiry=${info.expiry} ` +
       `memory=${info.memory} `)
   }

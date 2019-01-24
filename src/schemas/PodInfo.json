@@ -24,6 +24,9 @@
     },
     "totalUptime": {
       "type": "number"
+    },
+    "pullPointer": {
+      "type": "string"
     }
   },
   "required": [ "id", "running", "start", "expiry", "totalUptime" ],
