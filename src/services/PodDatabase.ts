@@ -113,7 +113,7 @@ export default class PodDatabase {
       start: new Date().toISOString(),
       expiry: addDuration(params.duration),
       memory: params.memory,
-      totalUptime: uptime, 
+      totalUptime: uptime,
       pullPointer: params.pullPointer
     }
 

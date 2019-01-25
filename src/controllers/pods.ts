@@ -63,7 +63,7 @@ export default function (server: Hapi.Server, deps: Injector) {
   async function chargeForDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
 
-    const price = computePrice(config, ildcp, duration);
+    const price = computePrice(config, ildcp, duration)
     log.debug('got post pod request. duration=' + duration + ' price=' + price.toString())
 
     await chargeForRequest(request, price)
@@ -71,10 +71,10 @@ export default function (server: Hapi.Server, deps: Injector) {
     return duration
   }
 
-  function computePrice(config: any, ildcp: any, duration: any) {
-    const currencyPerSecond = getCurrencyPerSecond(config, ildcp);
-    const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL);
-    return price;
+  function computePrice (config: any, ildcp: any, duration: any) {
+    const currencyPerSecond = getCurrencyPerSecond(config, ildcp)
+    const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
+    return price
   }
 
   async function chargeForRequest (request: any, price: BigNumber.Value): Promise<void> {
@@ -129,10 +129,10 @@ export default function (server: Hapi.Server, deps: Injector) {
     const pullPointer = request.query['pullPointer'] || ''
     if (request.headers['pay-accept']) {
       if (request.headers['pay-accept'].indexOf('interledger-pull') !== -1) {
-        if (config.pull){
+        if (config.pull) {
           if (duration > config.frequencySeconds) {
             if (pullPointer !== '') {
-              requestPullPointer(duration);
+              requestPullPointer(duration)
             } else {
               return String(config.frequencySeconds || 1).toString()
             }
@@ -140,26 +140,27 @@ export default function (server: Hapi.Server, deps: Injector) {
         }
       }
     }
-    return await chargeForDuration(request)
+    await chargeForDuration(request)
+    return duration
   }
 
-  function requestPullPointer(duration: any) {
+  function requestPullPointer (duration: any) {
     let amount = computePrice(config, ildcp, String(config.frequencySeconds))
     let cycles = new BigNumber(duration).div(config.frequencySeconds || 1).integerValue(BigNumber.ROUND_CEIL)
     let pointerInfo = {
       'amount': amount,
-      'start': new Date(Date.now()).toISOString().split('.')[0] + "Z",
+      'start': new Date(Date.now()).toISOString().split('.')[0] + 'Z',
       'frequency': config.frequency,
       'interval': config.frequencyInterval,
       'cycles': cycles,
       'assetCode': ildcp.getAssetCode(),
       'assetScale': Number(ildcp.getAssetScale()),
       'total': cycles.multipliedBy(config.frequencySeconds || 1).multipliedBy(amount)
-    };
-    const error = Boom.paymentRequired('Failed to retrieve pull-pointer.');
-    error.output.headers['Pay-Accept'] = 'interledger-pull';
-    error.output.headers['Pull-Pointer'] = JSON.stringify(pointerInfo);
-    throw error;
+    }
+    const error = Boom.paymentRequired('Failed to retrieve pull-pointer.')
+    error.output.headers['Pay-Accept'] = 'interledger-pull'
+    error.output.headers['Pull-Pointer'] = JSON.stringify(pointerInfo)
+    throw error
   }
 
   async function extendPod (request: any, h: Hapi.ResponseToolkit) {

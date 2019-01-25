@@ -34,7 +34,7 @@ function setFrequency (frequency: string, interval: number) {
   } else if (frequency === 'YEAR') {
     return interval * 31536000
   } else {
-    throw new Error ('Codiusd requires valid CODIUS_PULL_FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
+    throw new Error('Codiusd requires valid CODIUS_PULL_FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
   }
 }
 
