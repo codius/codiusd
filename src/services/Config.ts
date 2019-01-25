@@ -34,7 +34,7 @@ function setFrequency (frequency: string, interval: number) {
   } else if (frequency === 'YEAR') {
     return interval * 31536000
   } else {
-    throw new Error ('Codiusd requires valid FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
+    throw new Error ('Codiusd requires valid CODIUS_PULL_FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
   }
 }
 
@@ -109,10 +109,10 @@ export default class Config {
     this.adminApi = env.CODIUS_ADMIN_API === 'true'
     this.adminPort = Number(env.CODIUS_ADMIN_PORT) || 3001
 
-    this.pull = env.PULL === 'true'
+    this.pull = env.CODIUS_PULL === 'true'
     if (this.pull) {
-      this.frequency = (env.FREQUENCY || 'MONTH').toUpperCase()
-      this.frequencyInterval = Number(env.INTERVAL) || 1
+      this.frequency = (env.CODIUS_PULL_FREQUENCY || 'MONTH').toUpperCase()
+      this.frequencyInterval = Number(env.CODIUS_PULL_INTERVAL) || 1
       this.frequencySeconds = setFrequency(this.frequency, this.frequencyInterval)
     }
   }
