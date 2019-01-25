@@ -126,18 +126,20 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function getDuration (request: any): Promise<string> {
     const duration = request.query['duration'] || '3600'
-    const pullPointer = request.query['pull_pointer'] || ''
-    if (request.header['Pay-Accept'].indexOf('interledger-pull') !== -1) {
-      if (config.pull){
-        if (duration > config.frequencySeconds) {
-          if (pullPointer !== '') {
-            requestPullPointer(duration);
-          } else {
-            return String(config.frequencySeconds || 1).toString()
+    const pullPointer = request.query['pullPointer'] || ''
+    if (request.headers['pay-accept']) {
+      if (request.headers['pay-accept'].indexOf('interledger-pull') !== -1) {
+        if (config.pull){
+          if (duration > config.frequencySeconds) {
+            if (pullPointer !== '') {
+              requestPullPointer(duration);
+            } else {
+              return String(config.frequencySeconds || 1).toString()
+            }
           }
         }
       }
-    }  
+    }
     return await chargeForDuration(request)
   }
 
