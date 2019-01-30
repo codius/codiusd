@@ -80,7 +80,7 @@ export default class PodManager {
       const podInfo = this.pods.getPod(pod)
       if (podInfo) {
         if (podInfo.pullPointer) {
-          await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod)
+          await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod.bind(this))
         } else {
           await this.cleanup(pod)
         }
@@ -116,13 +116,13 @@ export default class PodManager {
 
     if (pullPointer !== '') {
       try {
-        await this.pull(podSpec.id, pullPointer, this.addPod, podSpec, port)
+        await this.pull(podSpec.id, pullPointer, this.addPod.bind(this), podSpec, port)
       } catch (err) {
         log.error(`run pod failed, error=${err.message}`)
         throw Boom.badImplementation('run pod failed')
       }
     } else {
-      await this.addPod(podSpec.id, podSpec, duration, pullPointer, port)
+      await this.addPod(podSpec.id, duration, podSpec, pullPointer, port)
     }
   }
 
@@ -195,24 +195,25 @@ export default class PodManager {
         sharedSecret: response.sharedSecret
       })
 
-      await ilpConn.on('stream', (stream: any) => {
-        stream.setReceiveMax(response.pullBalance.available)
+      const stream = await ilpConn.createStream()
+      stream.setReceiveMax(response.balance.current)
 
-        stream.on('money', async (amount: any) => {
-          if (amount > 0) {
-            const currencyPerSecond = getCurrencyPerSecond(this.config, this.ildcp)
-            const duration = new BigNumber(amount).div(currencyPerSecond)
-            await callback({ id: id, duration: duration, pullPointer: pullPointer, podSpec: podSpec, port: port })
-          } else {
-            await this.cleanup(id)
-          }
-        })
+      stream.on('money', async (amount: any) => {
+        log.info('received ' + amount + ' units')
+        if (amount > 0) {
+          const currencyPerSecond = getCurrencyPerSecond(this.config, this.ildcp)
+          const duration = new BigNumber(amount).div(currencyPerSecond)
+          await callback(id, duration, podSpec, pullPointer, port)
+        } else {
+          await this.cleanup(id)
+        }
       })
+
       return new Promise(resolve => ilpConn.on('end', resolve))
     }
   }
 
-  private async addPod (id: string, podSpec: PodSpec, duration: string, pullPointer: string, port?: string) {
+  private async addPod (id: string, duration: string, podSpec: PodSpec, pullPointer: string, port?: string) {
     try {
       await this.pods.addPod({
         id: podSpec.id,

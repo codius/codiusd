@@ -59,7 +59,7 @@ export default class PodDatabase {
       .map(p => p.id)
   }
 
-  public async addDurationToPod (id: string, duration: string) {
+  public async addDurationToPod (id: string, duration: string, podSpec?:any, pullPointer?:string, port?: string) {
     const info = this.pods.get(id)
     if (!info) {
       throw Boom.notFound('no pod found with id. id=' + id)

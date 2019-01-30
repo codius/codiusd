@@ -130,8 +130,8 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (request.headers['pay-accept']) {
       if (request.headers['pay-accept'].indexOf('interledger-pull') !== -1) {
         if (config.pull) {
-          if (duration > config.frequencySeconds) {
-            if (pullPointer !== '') {
+          if (duration >= config.frequencySeconds) {
+            if (pullPointer === '') {
               requestPullPointer(duration)
             } else {
               return String(config.frequencySeconds || 1).toString()
@@ -155,7 +155,7 @@ export default function (server: Hapi.Server, deps: Injector) {
       'cycles': cycles,
       'assetCode': ildcp.getAssetCode(),
       'assetScale': Number(ildcp.getAssetScale()),
-      'total': cycles.multipliedBy(config.frequencySeconds || 1).multipliedBy(amount)
+      'total': cycles.multipliedBy(amount)
     }
     const error = Boom.paymentRequired('Failed to retrieve pull-pointer.')
     error.output.headers['Pay-Accept'] = 'interledger-pull'
