@@ -80,7 +80,11 @@ export default class PodManager {
       const podInfo = this.pods.getPod(pod)
       if (podInfo) {
         if (podInfo.pullPointer) {
-          await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod.bind(this))
+          try {
+            await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod.bind(this))
+          } catch (err) {
+            await this.cleanup(pod)
+          }
         } else {
           await this.cleanup(pod)
         }
