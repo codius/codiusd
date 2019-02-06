@@ -111,7 +111,7 @@ export default class Config {
 
     this.pull = env.CODIUS_PULL === 'true'
     if (this.pull) {
-      this.frequency = (env.CODIUS_PULL_FREQUENCY || 'MONTH').toUpperCase()
+      this.frequency = (env.CODIUS_PULL_FREQUENCY || 'DAY').toUpperCase()
       this.frequencyInterval = Number(env.CODIUS_PULL_INTERVAL) || 1
       this.frequencySeconds = setFrequency(this.frequency, this.frequencyInterval)
     }
