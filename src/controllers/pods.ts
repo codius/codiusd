@@ -130,11 +130,11 @@ export default function (server: Hapi.Server, deps: Injector) {
     if (request.headers['pay-accept']) {
       if (request.headers['pay-accept'].indexOf('interledger-pull') !== -1) {
         if (config.pull) {
-          if (duration >= config.frequencySeconds) {
+          if (duration >= config.pullIntervalSeconds) {
             if (pullPointer === '') {
               requestPullPointer(duration)
             } else {
-              return String(config.frequencySeconds || 1).toString()
+              return String(config.pullIntervalSeconds || 1).toString()
             }
           }
         }
@@ -145,14 +145,13 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   function requestPullPointer (duration: any) {
-    let amount = computePrice(config, ildcp, String(config.frequencySeconds))
-    let cycles = new BigNumber(duration).div(config.frequencySeconds || 1).integerValue(BigNumber.ROUND_CEIL)
+    let amount = computePrice(config, ildcp, String(config.pullIntervalSeconds))
+    let cycles = new BigNumber(duration).div(config.pullIntervalSeconds || 1).integerValue(BigNumber.ROUND_CEIL)
     let pointerInfo = {
       'amount': amount,
-      'start': new Date(Date.now()).toISOString().split('.')[0] + 'Z',
-      'frequency': config.frequency,
-      'interval': config.frequencyInterval,
+      'interval': config.pullInterval,
       'cycles': cycles,
+      'cap': config.pullCap,
       'assetCode': ildcp.getAssetCode(),
       'assetScale': Number(ildcp.getAssetScale()),
       'total': cycles.multipliedBy(amount)

@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import * as moment from 'moment';
 import { IldcpInfo } from '../schemas/IldcpInfo'
 import { Injector } from 'reduct'
 import { SelfTestConfig } from '../schemas/SelfTestConfig'
@@ -24,20 +25,6 @@ function setPrice () {
   return 10
 }
 
-function setFrequency (frequency: string, interval: number) {
-  if (frequency === 'DAY') {
-    return interval * 86400
-  } else if (frequency === 'WEEK') {
-    return interval * 604800
-  } else if (frequency === 'MONTH') {
-    return interval * 2592000
-  } else if (frequency === 'YEAR') {
-    return interval * 31536000
-  } else {
-    throw new Error('Codiusd requires valid CODIUS_PULL_FREQUENCY to be set. Valid values are DAY, WEEK, MONTH, YEAR.')
-  }
-}
-
 export default class Config {
   readonly bearerToken: string
   readonly hyperSock: string
@@ -55,9 +42,9 @@ export default class Config {
   readonly devIldcp: IldcpInfo
   readonly showAdditionalHostInfo: boolean
   readonly pull: boolean
-  readonly frequency: string | void
-  readonly frequencyInterval: number | void
-  readonly frequencySeconds: number | void
+  readonly pullInterval: string | void
+  readonly pullCap: boolean | void
+  readonly pullIntervalSeconds: number | void
   hostCostPerMonth: number
   readonly adminApi: boolean
   readonly adminPort: number
@@ -111,9 +98,12 @@ export default class Config {
 
     this.pull = env.CODIUS_PULL === 'true'
     if (this.pull) {
-      this.frequency = (env.CODIUS_PULL_FREQUENCY || 'DAY').toUpperCase()
-      this.frequencyInterval = Number(env.CODIUS_PULL_INTERVAL) || 1
-      this.frequencySeconds = setFrequency(this.frequency, this.frequencyInterval)
+      this.pullInterval = env.CODIUS_PULL_INTERVAL || 'P0Y1M0D'
+      this.pullCap = env.CODIUS_PULL_CAP === 'true'
+      this.pullIntervalSeconds = moment.duration(this.pullInterval).asSeconds()
+      if (this.pullIntervalSeconds < 60) {
+        throw new Error('Codiusd requires a CODIUS_PULL_INTERVAL of at least 1 minute.')
+      }
     }
   }
 }
