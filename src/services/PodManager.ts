@@ -81,7 +81,7 @@ export default class PodManager {
       if (podInfo) {
         if (podInfo.pullPointer) {
           try {
-            await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod.bind(this))
+            await this.pull(pod, podInfo.pullPointer, this.pods.addDurationToPod.bind(this.pods))
           } catch (err) {
             await this.cleanup(pod)
           }
@@ -187,34 +187,28 @@ export default class PodManager {
   }
 
   private async pull (id: string, pullPointer: string, callback: any, podSpec?: PodSpec, port?: string) {
-    // should be replaced with SPSP.pull once that is integrated
     const plugin = makePlugin()
     await plugin.connect()
-    const response = await SPSP.query(pullPointer)
-
-    if (response.contentType.indexOf('application/spsp4+json') !== -1) {
-      const ilpConn = await createConnection({
-        plugin,
-        destinationAccount: response.destinationAccount,
-        sharedSecret: response.sharedSecret
-      })
-
-      const stream = await ilpConn.createStream()
-      stream.setReceiveMax(response.balance.current)
-
-      stream.on('money', async (amount: any) => {
-        log.info('received ' + amount + ' units')
+    await SPSP.pull(plugin, {
+      pointer: pullPointer,
+      callbackOpts: {
+        currencyPerSecond: getCurrencyPerSecond(this.config, this.ildcp),
+        id,
+        podSpec,
+        pullPointer,
+        port,
+        callback,
+        cleanup: this.cleanup.bind(this)
+      },
+      callback: function (amount: number, opts: any) {
         if (amount > 0) {
-          const currencyPerSecond = getCurrencyPerSecond(this.config, this.ildcp)
-          const duration = new BigNumber(amount).div(currencyPerSecond)
-          await callback(id, duration, podSpec, pullPointer, port)
+          const duration = new BigNumber(amount).div(opts.currencyPerSecond)
+          opts.callback(opts.id, duration, opts.podSpec, opts.pullPointer, opts.port)
         } else {
-          await this.cleanup(id)
+          opts.cleanup(opts.id)
         }
-      })
-
-      return new Promise(resolve => ilpConn.on('end', resolve))
-    }
+      }
+    })
   }
 
   private async addPod (id: string, duration: string, podSpec: PodSpec, pullPointer: string, port?: string) {
