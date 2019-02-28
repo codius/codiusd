@@ -1,7 +1,6 @@
 // import axios from 'axios'
 import * as Boom from 'boom'
 import { Injector } from 'reduct'
-import { createConnection } from 'ilp-protocol-stream'
 import { getCurrencyPerSecond } from '../util/priceRate'
 import { PodSpec } from '../schemas/PodSpec'
 import Config from './Config'

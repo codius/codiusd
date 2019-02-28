@@ -1,5 +1,5 @@
 import * as crypto from 'crypto'
-import * as moment from 'moment';
+import * as moment from 'moment'
 import { IldcpInfo } from '../schemas/IldcpInfo'
 import { Injector } from 'reduct'
 import { SelfTestConfig } from '../schemas/SelfTestConfig'
