@@ -46,21 +46,25 @@ export default class SelfTest {
   async getPrice (manifestJson: object): Promise<BigNumber.Value> {
     const host = this.config.publicUri
     const token = this.config.bearerToken
-    let response = await ilpFetch(`${host}/pods`, {
-      headers: {
-        Accept: `application/codius-v1+json`,
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      maxPrice: '0',
-      method: 'OPTIONS',
-      body: JSON.stringify(manifestJson),
-      timeout: 70000 // 1m10s
-    })
-    const quote = await response.json()
-    const ilpPrice = new Price()
-    const unscaledQuote = new BigNumber(quote.price).dividedBy(Math.pow(10, response.destination.assetScale))
-    return new BigNumber(await ilpPrice.fetch(response.destination.assetCode, unscaledQuote))
+    try {
+      await axios.request({
+        url: `${host}/pods`,
+        headers: {
+          Accept: `application/codius-v2+json`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        method: 'post',
+        data: JSON.stringify(manifestJson),
+        timeout: 70000 // 1m10s
+      })
+    } catch (e) {
+      const price = e.response.headers['interledger-stream-price']
+      const ilpPrice = new Price()
+      const unscaledQuote = new BigNumber(price).dividedBy(Math.pow(10, e.response.headers['interledger-stream-asset-scale']))
+      return new BigNumber(await ilpPrice.fetch(e.response.headers['interledger-stream-asset-code'], unscaledQuote))
+    }
+    throw new Error('POST /pods did not return expected 402')
   }
 
   async retryFetch (count: number, manifestJson: object, price: BigNumber.Value): Promise<any> {
@@ -69,7 +73,7 @@ export default class SelfTest {
     const token = this.config.bearerToken
     let response = await ilpFetch(`${host}/pods?duration=${duration}`, {
       headers: {
-        Accept: `application/codius-v1+json`,
+        Accept: `application/codius-v2+json`,
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },

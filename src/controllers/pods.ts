@@ -73,16 +73,35 @@ export default function (server: Hapi.Server, deps: Injector) {
   }
 
   async function chargeForRequest (request: any, price: BigNumber.Value): Promise<void> {
-    const stream = request.ilpStream()
     try {
-      await stream.receiveTotal(price)
+      if (!request.headers['pay-token']) {
+        throw Boom.paymentRequired()
+      }
+      const stream = request.ilpStream()
+      try {
+        await stream.receiveTotal(price)
+      } catch (e) {
+        log.error('error receiving payment. error=' + e.message)
+        throw Boom.paymentRequired('Failed to get payment before timeout')
+      } finally {
+        addProfit(stream.totalReceived).catch((err) => {
+          log.error('error updating profit. error=' + err.message)
+        })
+      }
     } catch (e) {
-      log.error('error receiving payment. error=' + e.message)
-      throw Boom.paymentRequired('Failed to get payment before timeout')
-    } finally {
-      addProfit(stream.totalReceived).catch((err) => {
-        log.error('errors updating profit. error=' + err.message)
-      })
+      if (!e.output.headers['Pay']) {
+        e.output.headers['Pay'] = 'interledger-stream'
+      } else {
+        const payHeader = e.output.headers['Pay'].split(' ')
+        if (payHeader.length === 3) {
+          e.output.headers['Interledger-Stream-Destination-Account'] = payHeader[1]
+          e.output.headers['Interledger-Stream-Shared-Secret'] = payHeader[2]
+        }
+      }
+      e.output.headers['Interledger-Stream-Price'] = price.toString()
+      e.output.headers['Interledger-Stream-Asset-Code'] = ildcp.getAssetCode()
+      e.output.headers['Interledger-Stream-Asset-Scale'] = ildcp.getAssetScale().toString()
+      throw e
     }
   }
 
@@ -166,25 +185,6 @@ export default function (server: Hapi.Server, deps: Injector) {
     }
   }
 
-  async function getPodPrice (request: any, h: Hapi.ResponseToolkit) {
-    await chargeForRequest(request, new BigNumber(0))
-    const duration = request.query['duration'] || 3600
-    const currencyPerSecond = getCurrencyPerSecond(config, ildcp)
-    const price = currencyPerSecond.times(new BigNumber(duration)).integerValue(BigNumber.ROUND_CEIL)
-    log.debug('got pod options request. duration=' + duration + ' price=' + price.toString())
-    const podSpec = manifestParser.manifestToPodSpec(
-      request.payload['manifest'],
-      request.payload['private']
-    )
-
-    log.debug('podSpec', podSpec)
-
-    return {
-      manifestHash: podSpec.id,
-      price: price.toString()
-    }
-  }
-
   async function getPodLogs (request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const podId = request.params['id']
     const pod = podDatabase.getPod(podId)
@@ -209,25 +209,6 @@ export default function (server: Hapi.Server, deps: Injector) {
       .header('Connection', 'keep-alive')
       .header('Cache-Control', 'no-cache')
   }
-
-  server.route({
-    method: 'OPTIONS',
-    path: '/pods',
-    handler: getPodPrice,
-    options: {
-      validate: {
-        payload: Enjoi(PodRequest),
-        failAction: async (req, h, err) => {
-          log.debug('validation error. error=' + (err && err.message))
-          throw Boom.badRequest('Invalid request payload input')
-        }
-      },
-      payload: {
-        allow: 'application/json',
-        output: 'data'
-      }
-    }
-  })
 
   server.route({
     method: 'PUT',
