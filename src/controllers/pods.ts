@@ -74,19 +74,23 @@ export default function (server: Hapi.Server, deps: Injector) {
 
   async function chargeForRequest (request: any, price: BigNumber.Value): Promise<void> {
     try {
-      if (!request.headers['pay-token']) {
-        throw Boom.paymentRequired()
-      }
-      const stream = request.ilpStream()
       try {
-        await stream.receiveTotal(price)
+        if (!request.headers['pay-token']) {
+          throw Boom.paymentRequired()
+        }
+        const stream = request.ilpStream()
+        try {
+          await stream.receiveTotal(price)
+        } catch (e) {
+          log.error('error receiving payment. error=' + e.message)
+          throw Boom.paymentRequired('Failed to get payment before timeout')
+        } finally {
+          addProfit(stream.totalReceived).catch((err) => {
+            log.error('error updating profit. error=' + err.message)
+          })
+        }
       } catch (e) {
-        log.error('error receiving payment. error=' + e.message)
-        throw Boom.paymentRequired('Failed to get payment before timeout')
-      } finally {
-        addProfit(stream.totalReceived).catch((err) => {
-          log.error('error updating profit. error=' + err.message)
-        })
+        throw Boom.isBoom(e) ? e : Boom.paymentRequired()
       }
     } catch (e) {
       if (!e.output.headers['Pay']) {
