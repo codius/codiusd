@@ -1,8 +1,0 @@
-{
-  "extends": "tslint-config-standard",
-  "linterOptions": {
-    "exclude": [
-      "src/schemas/*.ts"
-    ]
-  }
-}
